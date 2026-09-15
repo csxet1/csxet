@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#12141c">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<title>مكتبة الملخصات</title>
+<meta name="description" content="كل ملخصاتك ومصادرك الدراسية بمكان وحد، منظمة حسب المادة والمرحلة.">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="مكتبة الملخصات">
+<meta property="og:description" content="كل ملخصاتك ومصادرك الدراسية بمكان وحد، منظمة حسب المادة والمرحلة.">
+<meta property="og:image" content="https://csxet.netlify.app/og-image.png">
+<meta property="og:url" content="https://csxet.netlify.app/">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="مكتبة الملخصات">
+<meta name="twitter:description" content="كل ملخصاتك ومصادرك الدراسية بمكان وحد، منظمة حسب المادة والمرحلة.">
+<meta name="twitter:image" content="https://csxet.netlify.app/og-image.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#120e1c;
+    --surface:#1d1730;
+    --surface-raised:#291f42;
+    --ink:#f1eef8;
+    --ink-muted:#a89fc4;
+    --accent:#7c3aed;
+    --accent-ink:#f5f2fb;
+    --accent-soft:#2b2050;
+    --border:rgba(168,139,250,0.14);
+    --danger:#c0604f;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Tajawal',sans-serif;
+    min-height:100vh;
+    line-height:1.6;
+  }
+
+  header{
+    padding:48px 24px 32px;
+    text-align:center;
+    border-bottom:1px solid var(--border);
+    position:relative;
+  }
+  header .tag{
+    display:inline-block;
+    font-size:13px;
+    color:var(--accent);
+    background:var(--accent-soft);
+    padding:5px 14px;
+    border-radius:999px;
+    margin-bottom:18px;
+    font-weight:500;
+  }
+  header h1{
+    font-size:clamp(28px,5vw,42px);
+    font-weight:800;
+    margin:0 0 10px;
+  }
+  header p{
+    color:var(--ink-muted);
+    font-size:16px;
+    max-width:480px;
+    margin:0 auto;
+  }
+
+  .edit-toggle{
+    position:absolute;
+    top:24px;
+    left:20px;
+    background:var(--surface-raised);
+    border:1px solid var(--border);
+    color:var(--ink);
+    padding:9px 16px;
+    border-radius:999px;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+  }
+  .edit-toggle.active{
+    background:var(--accent);
+    color:var(--accent-ink);
+    border-color:var(--accent);
+  }
+
+  .stage-switch{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+    margin-top:22px;
+  }
+  .stage-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    width:100%;
+    max-width:360px;
+  }
+  .stage-btn{
+    background:var(--surface-raised);
+    border:1px solid var(--border);
+    color:var(--ink-muted);
+    padding:9px 20px;
+    border-radius:999px;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .stage-grid .stage-btn{
+    width:100%;
+  }
+  .stage-btn.active{
+    background:var(--accent);
+    color:var(--accent-ink);
+    border-color:var(--accent);
+  }
+
+  main{
+    max-width:920px;
+    margin:0 auto;
+    padding:36px 20px 100px;
+  }
+  #home-view .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:16px;
+  }
+  .subject-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:22px 20px;
+    cursor:pointer;
+    text-align:right;
+    transition:border-color .15s ease, transform .15s ease;
+    position:relative;
+    overflow:hidden;
+  }
+  .subject-card:hover{
+    border-color:var(--accent);
+    transform:translateY(-2px);
+  }
+  .subject-card .name{
+    font-size:18px;
+    font-weight:700;
+    margin-bottom:6px;
+    padding-left:56px;
+  }
+  .subject-card .count{
+    font-size:13px;
+    color:var(--ink-muted);
+  }
+  .card-tools{
+    position:absolute;
+    top:16px;
+    left:14px;
+    display:flex;
+    gap:6px;
+  }
+  .icon-btn{
+    background:var(--surface-raised);
+    border:1px solid var(--border);
+    color:var(--ink);
+    width:28px; height:28px;
+    border-radius:7px;
+    font-size:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    padding:0;
+    line-height:1;
+  }
+  .icon-btn.danger{color:var(--danger);}
+  .icon-btn:hover{border-color:var(--accent);}
+  .icon-btn:disabled{opacity:0.3; cursor:default;}
+
+  .add-card{
+    background:none;
+    border:1px dashed var(--border);
+    border-radius:14px;
+    color:var(--ink-muted);
+    font-family:inherit;
+    font-size:15px;
+    font-weight:500;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:78px;
+  }
+  .add-card:hover{border-color:var(--accent); color:var(--accent);}
+
+  #subject-view{display:none;}
+  .back-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:none;
+    border:1px solid var(--border);
+    color:var(--ink);
+    padding:8px 16px;
+    border-radius:999px;
+    font-family:inherit;
+    font-size:14px;
+    cursor:pointer;
+    margin-bottom:24px;
+  }
+  .back-btn:hover{border-color:var(--accent);}
+  #subject-view h2{
+    font-size:28px;
+    font-weight:800;
+    margin:0 0 24px;
+  }
+  .file-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:20px;
+  }
+  .file-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px 18px;
+  }
+  .file-row .fname{
+    font-weight:500;
+    font-size:15px;
+    flex:1;
+  }
+  .file-row .right-actions{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-shrink:0;
+  }
+  .file-row a{
+    background:var(--accent);
+    color:var(--accent-ink);
+    font-weight:700;
+    font-size:13px;
+    text-decoration:none;
+    padding:9px 16px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  .empty{
+    color:var(--ink-muted);
+    text-align:center;
+    padding:50px 20px;
+    border:1px dashed var(--border);
+    border-radius:14px;
+    font-size:15px;
+    margin-bottom:20px;
+  }
+
+  .add-form{
+    display:none;
+    background:var(--surface-raised);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:18px;
+    gap:10px;
+    flex-direction:column;
+  }
+  .add-form.visible{display:flex;}
+  .add-form input{
+    background:var(--bg);
+    border:1px solid var(--border);
+    color:var(--ink);
+    padding:12px 14px;
+    border-radius:10px;
+    font-family:inherit;
+    font-size:15px;
+    width:100%;
+  }
+  .add-form input:focus{outline:none; border-color:var(--accent);}
+  .add-form button{
+    background:var(--accent);
+    color:var(--accent-ink);
+    border:none;
+    padding:12px;
+    border-radius:10px;
+    font-family:inherit;
+    font-weight:700;
+    font-size:15px;
+    cursor:pointer;
+  }
+
+  .export-bar{
+    display:none;
+    position:fixed;
+    bottom:0; right:0; left:0;
+    background:var(--surface-raised);
+    border-top:1px solid var(--border);
+    padding:14px 20px;
+    text-align:center;
+    z-index:20;
+  }
+  .export-bar.visible{display:block;}
+  .export-bar button{
+    background:var(--accent);
+    color:var(--accent-ink);
+    border:none;
+    padding:12px 22px;
+    border-radius:999px;
+    font-family:inherit;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+  }
+
+  .modal-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    z-index:30;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .modal-overlay.visible{display:flex;}
+  .modal{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:24px;
+    max-width:560px;
+    width:100%;
+    max-height:80vh;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .modal h3{margin:0; font-size:19px;}
+  .modal p{margin:0; color:var(--ink-muted); font-size:14px;}
+  .modal textarea{
+    flex:1;
+    min-height:220px;
+    background:var(--bg);
+    border:1px solid var(--border);
+    color:var(--ink);
+    border-radius:10px;
+    padding:14px;
+    font-family:monospace;
+    font-size:12px;
+    direction:ltr;
+    text-align:left;
+    resize:none;
+  }
+  .modal .modal-actions{display:flex; gap:10px;}
+  .modal .modal-actions button{
+    flex:1;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    font-family:inherit;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .modal .copy-btn{background:var(--accent); color:var(--accent-ink);}
+  .modal .close-btn{background:var(--surface-raised); color:var(--ink); border:1px solid var(--border) !important;}
+
+  .notice{
+    max-width:920px;
+    margin:0 auto;
+    padding:14px 20px 0;
+    font-size:13px;
+    color:var(--ink-muted);
+    text-align:center;
+  }
+
+
+
+  .news-view{display:none;}
+  .news-header{
+    text-align:center;
+    margin-bottom:24px;
+  }
+  .news-header h2{
+    font-size:28px;
+    font-weight:800;
+    margin:0 0 6px;
+  }
+  .news-header p{
+    margin:0;
+    color:var(--ink-muted);
+    font-size:14px;
+  }
+  .news-list{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:16px;
+  }
+  .news-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+  }
+  .news-image{
+    display:block;
+    width:100%;
+    aspect-ratio:16/10;
+    object-fit:cover;
+    background:var(--surface-raised);
+  }
+  .news-body{
+    padding:18px;
+  }
+  .news-text{
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    font-size:15px;
+    line-height:1.9;
+    margin:0;
+  }
+  .news-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:12px;
+  }
+  .news-date{
+    color:var(--ink-muted);
+    font-size:12px;
+  }
+  .like-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:none;
+    border:none;
+    color:var(--ink-muted);
+    font-size:13px;
+    font-weight:700;
+    font-family:inherit;
+    cursor:pointer;
+    padding:4px 6px;
+    border-radius:999px;
+    transition:color .15s ease, transform .1s ease;
+  }
+  .like-btn:hover{color:var(--accent);}
+  .like-btn:active{transform:scale(0.88);}
+  .like-btn .like-icon{
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2;
+    transition:fill .15s ease, stroke .15s ease;
+  }
+  .like-btn.liked{color:var(--accent);}
+  .like-btn.liked .like-icon{
+    fill:var(--accent);
+    stroke:var(--accent);
+  }
+  .news-empty{
+    grid-column:1/-1;
+  }
+
+  @media (max-width:560px){
+    .stage-switch{gap:8px;}
+    .stage-grid{gap:8px; max-width:320px;}
+    .stage-btn{padding:8px 14px; font-size:13px;}
+    .news-list{grid-template-columns:1fr;}
+  }
+
+  footer{
+    text-align:center;
+    color:var(--ink-muted);
+    font-size:13px;
+    padding:30px 20px 100px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">قناة التليجرام</span>
+  <h1>مكتبة الملخصات</h1>
+  <p></p>
+  <div class="stage-switch" id="stage-switch">
+    <div class="stage-grid">
+      <button class="stage-btn active" data-stage="1" onclick="switchStage(1)">المرحلة الأولى</button>
+      <button class="stage-btn" data-stage="2" onclick="switchStage(2)">المرحلة الثانية</button>
+      <button class="stage-btn" data-stage="3" onclick="switchStage(3)">المرحلة الثالثة</button>
+      <button class="stage-btn" data-stage="4" onclick="switchStage(4)">المرحلة الرابعة</button>
+    </div>
+    <button class="stage-btn news-btn" data-stage="news" onclick="showNews()">آخر الأخبار</button>
+  </div>
+</header>
+
+<main>
+
+  <div id="home-view">
+    <div class="grid" id="subjects-grid"></div>
+  </div>
+
+  <div id="news-view" class="news-view">
+    <div class="news-header">
+      <h2>آخر الأخبار</h2>
+      <p>أحدث المنشورات والإعلانات</p>
+    </div>
+    <div class="news-list" id="news-list">
+      <div class="empty news-empty">جاري تحميل آخر الأخبار...</div>
+    </div>
+  </div>
+
+  <div id="subject-view">
+    <button class="back-btn" onclick="showHome()">→ رجوع للمواد</button>
+    <h2 id="subject-title"></h2>
+    <div class="file-list" id="subject-files"></div>
+
+    <div class="add-form" id="add-file-form">
+      <input type="text" id="new-file-name" placeholder="اسم الملف / الملخص">
+      <input type="text" id="new-file-link" placeholder="رابط منشور القناة بالتليجرام">
+      <button onclick="addFile()">إضافة الملف</button>
+    </div>
+  </div>
+
+</main>
+
+<footer>يتم التحديث بين فترة وفترة كل ما يضاف ملف جديد</footer>
+
+<div class="export-bar" id="export-bar">
+  <button onclick="openExport()">📋 نسخ الكود للإرسال لكلاود</button>
+</div>
+
+<div class="modal-overlay" id="export-modal">
+  <div class="modal">
+    <h3>الكود المحدث</h3>
+    <p>انسخ هذا النص كامل وابعثه لكلاود بالشات، وبيثبته لك بالموقع ويرجعلك الملف جاهز للرفع.</p>
+    <textarea id="export-text" readonly></textarea>
+    <div class="modal-actions">
+      <button class="copy-btn" onclick="copyExport()">نسخ النص</button>
+      <button class="close-btn" onclick="closeExport()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* هذا هو المحتوى الحالي للموقع. التعديلات اللي تسويها بوضع "تعديل"
+   تبقى بهذه الصفحة بس لين تنسخ الكود وترسله لكلاود ليثبته بشكل دائم. */
+// ===== بيانات المشروع بـ Supabase =====
+const SUPABASE_URL = "https://dwbnvmoqirwxyjbornwj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_s58MXnsC41yueDVhXBtpDA_ecfN9EWw";
+
+// تصير هذي القائمة معبّاة تلقائيًا من قاعدة بيانات Supabase عند فتح الصفحة
+let SUBJECTS_DATA = [];
+let ALL_ROWS = [];
+let ALL_SUBJECT_ROWS = [];
+let currentStage = 1;
+let NEWS_DATA = [];
+
+async function loadNews(){
+  try{
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/news_posts?select=id,text,image_url,created_at,likes&order=created_at.desc&limit=10`,
+      {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`
+        }
+      }
+    );
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    NEWS_DATA = await res.json();
+    renderNews();
+  } catch(err){
+    console.error("تعذر تحميل آخر الأخبار:", err);
+    NEWS_DATA = [];
+    const list = document.getElementById('news-list');
+    if(list) list.innerHTML = '<div class="empty news-empty">تعذر تحميل آخر الأخبار، حاول تحديث الصفحة</div>';
+  }
+}
+
+function renderNews(){
+  const list = document.getElementById('news-list');
+  if(!list) return;
+  if(!NEWS_DATA.length){
+    list.innerHTML = '<div class="empty news-empty">لا توجد منشورات حالياً</div>';
+    return;
+  }
+  const likedPosts = getLikedPosts();
+  list.innerHTML = NEWS_DATA.map(post => {
+    const date = post.created_at ? new Date(post.created_at).toLocaleDateString('ar-IQ', {
+      year:'numeric', month:'long', day:'numeric'
+    }) : '';
+    const isLiked = likedPosts.has(String(post.id));
+    const likeCount = post.likes || 0;
+    return `
+      <article class="news-card">
+        <img class="news-image" src="${escapeHtml(post.image_url)}" alt="صورة المنشور" loading="lazy" decoding="async">
+        <div class="news-body">
+          <p class="news-text">${escapeHtml(post.text)}</p>
+          <div class="news-footer">
+            ${date ? `<div class="news-date">${escapeHtml(date)}</div>` : '<span></span>'}
+            <button class="like-btn ${isLiked ? 'liked' : ''}" onclick='toggleLike(${JSON.stringify(post.id)})' aria-label="إعجاب">
+              <svg class="like-icon" viewBox="0 0 24 24" width="18" height="18"><path d="M12 21s-6.7-4.35-9.33-8.2C.86 10.1 1.4 6.6 4.2 5.1c2.2-1.18 4.7-.5 6.1 1.4l1.7 2.3 1.7-2.3c1.4-1.9 3.9-2.58 6.1-1.4 2.8 1.5 3.34 5 1.53 7.7C18.7 16.65 12 21 12 21z"/></svg>
+              <span class="like-count">${likeCount}</span>
+            </button>
+          </div>
+        </div>
+      </article>`;
+  }).join('');
+}
+
+function getLikedPosts(){
+  try{
+    return new Set(JSON.parse(localStorage.getItem('likedNewsPosts') || '[]'));
+  } catch(err){
+    return new Set();
+  }
+}
+
+function saveLikedPosts(set){
+  try{
+    localStorage.setItem('likedNewsPosts', JSON.stringify([...set]));
+  } catch(err){
+    console.error("تعذر حفظ حالة الإعجاب محليًا:", err);
+  }
+}
+
+async function toggleLike(id){
+  const post = NEWS_DATA.find(p => String(p.id) === String(id));
+  if(!post) return;
+
+  const likedPosts = getLikedPosts();
+  const wasLiked = likedPosts.has(String(id));
+  const newLikes = Math.max(0, (post.likes || 0) + (wasLiked ? -1 : 1));
+
+  // تحديث فوري بالواجهة (optimistic update) قبل انتظار رد قاعدة البيانات.
+  post.likes = newLikes;
+  if(wasLiked){ likedPosts.delete(String(id)); } else { likedPosts.add(String(id)); }
+  saveLikedPosts(likedPosts);
+  renderNews();
+
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/news_posts?id=eq.${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({ likes: newLikes })
+    });
+    if(!res.ok) throw new Error("HTTP " + res.status);
+  } catch(err){
+    console.error("تعذر تحديث عدد اللايكات بقاعدة البيانات:", err);
+  }
+}
+
+async function loadDataFromSupabase(){
+  try {
+    // حمّل الملفات أولاً وحدها، حتى لا يتوقف ظهور مواد المرحلة الأولى
+    // بانتظار جدول المواد أو ميزة آخر الأخبار.
+    const filesRes = await fetch(`${SUPABASE_URL}/rest/v1/files?select=subject,name,link,stage&order=id.asc`, {
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`
+      },
+      cache: 'no-store'
+    });
+
+    if(!filesRes.ok) throw new Error("FILES HTTP " + filesRes.status);
+    ALL_ROWS = await filesRes.json();
+
+    // اعرض المواد فور وصول الملفات.
+    buildSubjectsForStage(currentStage);
+    renderHome();
+
+    // جدول ترتيب المواد يُحمّل بشكل مستقل؛ إذا تأخر أو فشل لا يمنع الملفات من الظهور.
+    try {
+      const subjectsRes = await fetch(`${SUPABASE_URL}/rest/v1/subjects?select=name,stage,sort_order&order=stage.asc,sort_order.asc`, {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`
+        },
+        cache: 'no-store'
+      });
+      ALL_SUBJECT_ROWS = subjectsRes.ok ? await subjectsRes.json() : [];
+      buildSubjectsForStage(currentStage);
+      renderHome();
+    } catch(subjectErr) {
+      console.warn("تعذر تحميل ترتيب المواد، سيتم استخدام بيانات الملفات:", subjectErr);
+      ALL_SUBJECT_ROWS = [];
+    }
+  } catch(err){
+    console.error("تعذر تحميل البيانات من Supabase:", err);
+    ALL_ROWS = [];
+    ALL_SUBJECT_ROWS = [];
+    SUBJECTS_DATA = [];
+    const grid = document.getElementById('subjects-grid');
+    if(grid){
+      grid.innerHTML = '<div class="empty">تعذر تحميل البيانات، حاول تحديث الصفحة</div>';
+    }
+  }
+}
+
+function buildSubjectsForStage(stage){
+  const fileRows = ALL_ROWS.filter(r => (r.stage || 1) === stage);
+  const filesBySubject = new Map();
+  fileRows.forEach(r => {
+    if(!filesBySubject.has(r.subject)) filesBySubject.set(r.subject, []);
+    filesBySubject.get(r.subject).push({ name: r.name, link: r.link });
+  });
+
+  // نبدأ بترتيب المواد المسجّلة صراحة بجدول subjects (حتى لو فاضية من الملفات)
+  const orderedNames = ALL_SUBJECT_ROWS
+    .filter(s => (s.stage || 1) === stage)
+    .map(s => s.name);
+
+  // نضيف أي مادة موجودة بالملفات بس مو مسجّلة بجدول subjects (توافق مع البيانات القديمة)
+  filesBySubject.forEach((_, name) => {
+    if(!orderedNames.includes(name)) orderedNames.push(name);
+  });
+
+  SUBJECTS_DATA = orderedNames.map(name => ({
+    name,
+    files: filesBySubject.get(name) || []
+  }));
+}
+
+function switchStage(stage){
+  currentStage = stage;
+  document.querySelectorAll('.stage-btn').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.dataset.stage) === stage);
+  });
+  buildSubjectsForStage(stage);
+  renderHome();
+  showHome();
+}
+
+let editMode = false;
+let currentSubjectIndex = null;
+
+const grid = document.getElementById('subjects-grid');
+const homeView = document.getElementById('home-view');
+const subjectView = document.getElementById('subject-view');
+const subjectTitle = document.getElementById('subject-title');
+const subjectFiles = document.getElementById('subject-files');
+const editToggleBtn = document.getElementById('edit-toggle');
+const exportBar = document.getElementById('export-bar');
+
+const EDIT_PASSWORD = "mojtaba200620065810";
+
+function requestEditMode(){
+  if(editMode){
+    toggleEditMode();
+    return;
+  }
+  const entered = prompt('أدخل كلمة مرور التعديل:');
+  if(entered === EDIT_PASSWORD){
+    toggleEditMode();
+  } else if(entered !== null){
+    alert('كلمة المرور غير صحيحة');
+  }
+}
+
+function toggleEditMode(){
+  editMode = !editMode;
+  editToggleBtn.classList.toggle('active', editMode);
+  editToggleBtn.textContent = editMode ? '✓ تم' : '✏️ تعديل';
+  exportBar.classList.toggle('visible', editMode);
+  renderHome();
+  if(currentSubjectIndex !== null) renderSubject(currentSubjectIndex);
+}
+
+function renderHome(){
+  grid.innerHTML = '';
+  SUBJECTS_DATA.forEach((subject, i) => {
+    const card = document.createElement('div');
+    card.className = 'subject-card';
+
+    let tools = '';
+    if(editMode){
+      tools = `
+        <div class="card-tools">
+          <button class="icon-btn" ${i===0?'disabled':''} onclick="event.stopPropagation(); moveSubject(${i},-1)">▲</button>
+          <button class="icon-btn" ${i===SUBJECTS_DATA.length-1?'disabled':''} onclick="event.stopPropagation(); moveSubject(${i},1)">▼</button>
+          <button class="icon-btn" onclick="event.stopPropagation(); renameSubject(${i})">✏️</button>
+          <button class="icon-btn danger" onclick="event.stopPropagation(); deleteSubject(${i})">🗑</button>
+        </div>`;
+    }
+
+    card.innerHTML = `
+      ${tools}
+      <div class="name">${escapeHtml(subject.name)}</div>
+      <div class="count">${subject.files.length} ملف</div>
+    `;
+    card.onclick = () => showSubject(i);
+    grid.appendChild(card);
+  });
+
+  if(editMode){
+    const addCard = document.createElement('button');
+    addCard.className = 'add-card';
+    addCard.textContent = '+ إضافة مادة جديدة';
+    addCard.onclick = addSubject;
+    grid.appendChild(addCard);
+  }
+}
+
+function moveSubject(i, dir){
+  const j = i + dir;
+  if(j < 0 || j >= SUBJECTS_DATA.length) return;
+  [SUBJECTS_DATA[i], SUBJECTS_DATA[j]] = [SUBJECTS_DATA[j], SUBJECTS_DATA[i]];
+  renderHome();
+}
+
+function addSubject(){
+  const name = prompt('اسم المادة الجديدة:');
+  if(!name) return;
+  SUBJECTS_DATA.push({ name: name.trim(), files: [] });
+  renderHome();
+}
+
+function renameSubject(i){
+  const name = prompt('الاسم الجديد للمادة:', SUBJECTS_DATA[i].name);
+  if(!name) return;
+  SUBJECTS_DATA[i].name = name.trim();
+  renderHome();
+  if(currentSubjectIndex === i) subjectTitle.textContent = SUBJECTS_DATA[i].name;
+}
+
+function deleteSubject(i){
+  if(!confirm(`متأكد تبي تحذف "${SUBJECTS_DATA[i].name}" مع كل ملفاتها؟`)) return;
+  SUBJECTS_DATA.splice(i,1);
+  renderHome();
+}
+
+function showSubject(i){
+  currentSubjectIndex = i;
+  renderSubject(i);
+  homeView.style.display = 'none';
+  subjectView.style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+function renderSubject(i){
+  const subject = SUBJECTS_DATA[i];
+  subjectTitle.textContent = subject.name;
+  subjectFiles.innerHTML = '';
+
+  if(subject.files.length === 0){
+    subjectFiles.innerHTML = `<div class="empty">لا توجد ملفات مضافة لهذي المادة بعد</div>`;
+  } else {
+    subject.files.forEach((f, fi) => {
+      const row = document.createElement('div');
+      row.className = 'file-row';
+
+      let editBtns = '';
+      if(editMode){
+        editBtns = `
+          <button class="icon-btn" ${fi===0?'disabled':''} onclick="moveFile(${i},${fi},-1)">▲</button>
+          <button class="icon-btn" ${fi===subject.files.length-1?'disabled':''} onclick="moveFile(${i},${fi},1)">▼</button>
+          <button class="icon-btn danger" onclick="deleteFile(${i}, ${fi})">🗑</button>`;
+      }
+
+      row.innerHTML = `
+        <span class="fname">${escapeHtml(f.name)}</span>
+        <div class="right-actions">
+          <a href="${escapeHtml(f.link)}" target="_blank" rel="noopener">فتح في تليجرام</a>
+          ${editBtns}
+        </div>
+      `;
+      subjectFiles.appendChild(row);
+    });
+  }
+
+  const form = document.getElementById('add-file-form');
+  form.classList.toggle('visible', editMode);
+  document.getElementById('new-file-name').value = '';
+  document.getElementById('new-file-link').value = '';
+}
+
+function moveFile(subjectIndex, fileIndex, dir){
+  const files = SUBJECTS_DATA[subjectIndex].files;
+  const j = fileIndex + dir;
+  if(j < 0 || j >= files.length) return;
+  [files[fileIndex], files[j]] = [files[j], files[fileIndex]];
+  renderSubject(subjectIndex);
+}
+
+function addFile(){
+  const nameInput = document.getElementById('new-file-name');
+  const linkInput = document.getElementById('new-file-link');
+  const name = nameInput.value.trim();
+  const link = linkInput.value.trim();
+  if(!name || !link){
+    alert('لازم تكتب اسم الملف والرابط');
+    return;
+  }
+  SUBJECTS_DATA[currentSubjectIndex].files.push({ name, link });
+  renderSubject(currentSubjectIndex);
+  renderHome();
+}
+
+function deleteFile(subjectIndex, fileIndex){
+  if(!confirm('تحذف هذا الملف؟')) return;
+  SUBJECTS_DATA[subjectIndex].files.splice(fileIndex,1);
+  renderSubject(subjectIndex);
+  renderHome();
+}
+
+function showHome(){
+  currentSubjectIndex = null;
+  subjectView.style.display = 'none';
+  document.getElementById('news-view').style.display = 'none';
+  homeView.style.display = 'block';
+  document.querySelectorAll('.stage-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.stage === String(currentStage));
+  });
+  window.scrollTo(0,0);
+}
+
+async function showNews(){
+  currentSubjectIndex = null;
+  homeView.style.display = 'none';
+  subjectView.style.display = 'none';
+  document.getElementById('news-view').style.display = 'block';
+  document.querySelectorAll('.stage-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.stage === 'news');
+  });
+  if(!NEWS_DATA.length) await loadNews();
+  else renderNews();
+  window.scrollTo(0,0);
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function openExport(){
+  const lines = SUBJECTS_DATA.map(s => {
+    const filesLines = s.files.map(f =>
+      `    { name: ${JSON.stringify(f.name)}, link: ${JSON.stringify(f.link)} },`
+    ).join('\n');
+    return `  { name: ${JSON.stringify(s.name)}, files: [\n${filesLines}\n  ]},`;
+  }).join('\n');
+
+  const code = `const SUBJECTS_DATA = [\n${lines}\n];`;
+  document.getElementById('export-text').value = code;
+  document.getElementById('export-modal').classList.add('visible');
+}
+
+function closeExport(){
+  document.getElementById('export-modal').classList.remove('visible');
+}
+
+function copyExport(){
+  const textarea = document.getElementById('export-text');
+  textarea.select();
+  textarea.setSelectionRange(0, 999999);
+  document.execCommand('copy');
+  alert('تم نسخ الكود ✅ الحين ارسله لكلاود بالشات');
+}
+
+grid.innerHTML = '<div class="empty">جاري تحميل المواد...</div>';
+loadDataFromSupabase();
+loadNews();
+</script>
+
+
+<style>
+.site-credit {
+  margin: 48px auto 28px;
+  padding: 24px 20px;
+  text-align: center;
+  color: #9aa3bb;
+  font-size: 16px;
+  line-height: 1.9;
+}
+.site-credit .creator {
+  color: #f2f2f2;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.channel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+  padding: 12px 24px;
+  border-radius: 14px;
+  background: #229ED9;
+  color: #fff !important;
+  text-decoration: none !important;
+  font-weight: 700;
+}
+</style>
+
+<div class="site-credit">
+  <div class="creator">تم صنع الموقع بواسطة مجتبى حسن</div>
+  <div>للتواصل : @csxet</div>
+  <a class="channel-btn"
+     href="https://t.me/csxett"
+     target="_blank"
+     rel="noopener noreferrer">
+    قناة التليجرام
+  </a>
+</div>
+
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
