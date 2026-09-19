@@ -1,12 +1,12 @@
-const CACHE_NAME = 'csxet-pwa-v3';
+const CACHE_NAME = 'csxet-pwa-v2';
 const BASE = new URL('./', self.registration.scope);
 const APP_SHELL = [
   new URL('./', BASE).href,
   new URL('index.html', BASE).href,
   new URL('manifest.json', BASE).href,
-  new URL('icons/icon-192-v2.png', BASE).href,
-  new URL('icons/icon-512-v2.png', BASE).href,
-  new URL('icons/apple-touch-icon-v2.png', BASE).href
+  new URL('icons/icon-192.png', BASE).href,
+  new URL('icons/icon-512.png', BASE).href,
+  new URL('icons/apple-touch-icon.png', BASE).href
 ];
 
 self.addEventListener('install', event => {
