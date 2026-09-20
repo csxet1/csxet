@@ -493,7 +493,7 @@
     padding:0 8px env(safe-area-inset-bottom, 0px);
   }
   .bottom-nav-inner{
-    max-width:520px;
+    max-width:600px;
     margin:0 auto;
     height:var(--nav-h);
     display:flex;
@@ -588,6 +588,104 @@
     font-size:12px;
   }
 
+  /* ===== منصة السادس (قريباً) ===== */
+  .soon-view{display:none;}
+  .soon-text{
+    margin:0;
+    padding:90px 20px;
+    text-align:center;
+    font-size:clamp(30px,8vw,44px);
+    font-weight:800;
+    color:var(--ink-muted);
+  }
+
+  /* ===== إدارة الموقع ===== */
+  .about-view{display:none;}
+  .about-card{
+    max-width:640px;
+    margin:0 auto 16px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:22px 20px;
+  }
+  .about-text{
+    margin:0 0 14px;
+    font-size:15px;
+    line-height:2;
+    overflow-wrap:anywhere;
+  }
+  .about-text:last-child{margin-bottom:0;}
+  .about-credit{
+    margin:0 0 22px;
+    text-align:center;
+    font-size:16px;
+    font-weight:800;
+    line-height:1.8;
+  }
+  .about-label{
+    margin:0 0 12px;
+    font-size:15px;
+    font-weight:700;
+  }
+  .channel-label{margin-top:22px;}
+  .contact-links{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+  }
+  .contact-btn{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    padding:16px 10px;
+    background:var(--surface-raised);
+    border:1px solid var(--border);
+    border-radius:14px;
+    color:var(--ink);
+    text-decoration:none;
+    font-size:14px;
+    font-weight:700;
+    -webkit-tap-highlight-color:transparent;
+    transition:border-color .15s ease, transform .1s ease;
+  }
+  .contact-btn:hover{border-color:var(--accent);}
+  .contact-btn:active{transform:scale(.97);}
+  .contact-icon{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:48px; height:48px;
+    border-radius:14px;
+    color:#fff;
+    margin-bottom:2px;
+  }
+  .contact-icon.instagram{background:linear-gradient(45deg,#f9a03f 0%,#e1306c 50%,#833ab4 100%);}
+  .contact-icon.telegram{background:#229ED9;}
+  .contact-handle{
+    font-size:12px;
+    font-weight:500;
+    color:var(--ink-muted);
+    direction:ltr;
+  }
+  .channel-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    padding:14px 24px;
+    border-radius:14px;
+    background:#229ED9;
+    color:#fff;
+    text-decoration:none;
+    font-size:15px;
+    font-weight:700;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .1s ease;
+  }
+  .channel-btn:active{transform:scale(.98);}
+
   /* ===== عرض الصورة بحجم كامل ===== */
   .lightbox{
     display:none;
@@ -638,26 +736,23 @@
     .nav-icon{transition:none;}
   }
 
+  @media (max-width:380px){
+    .bottom-nav{padding-left:2px; padding-right:2px;}
+    .nav-label{font-size:10px;}
+  }
+
   @media (max-width:560px){
     .stage-switch{gap:8px;}
     .stage-grid{gap:8px; max-width:320px;}
     .stage-btn{padding:8px 14px; font-size:13px;}
     .news-list{grid-template-columns:1fr;}
   }
-
-  footer{
-    text-align:center;
-    color:var(--ink-muted);
-    font-size:13px;
-    padding:30px 20px 100px;
-  }
 </style>
 </head>
 <body>
 
 <header>
-  <span class="tag">قناة التليجرام</span>
-  <h1>مكتبة الملخصات</h1>
+  <h1>مكتبة الفيزياء</h1>
   <p></p>
   <div class="stage-switch" id="library-stages">
     <div class="stage-grid">
@@ -701,6 +796,49 @@
     <div class="schedule-list" id="schedule-list"></div>
   </div>
 
+  <div id="soon-view" class="soon-view">
+    <p class="soon-text">قريباً …</p>
+  </div>
+
+  <div id="about-view" class="about-view">
+    <div class="news-header">
+      <h2>إدارة الموقع</h2>
+    </div>
+
+    <div class="about-card">
+      <p class="about-text">تم صنع هذا الموقع لطلبة الفيزياء لكل من طلبة الجامعات والسادس العلمي … الغرض من هذا الموقع هو مساعدة الطلبة في تسهيل العمل الدراسي للطالب واختصاراً للجهد والوقت</p>
+      <p class="about-text">والموقع مجاني وخالي من الاعلانات صمم خصيصاً ليخدم ظروف الطلاب وتسهيل الأمر في الامتحانات عامة</p>
+    </div>
+
+    <div class="about-card">
+      <p class="about-credit">تم تصميم وصنع الموقع بواسطة مجتبى حسن</p>
+
+      <p class="about-label">للتواصل :</p>
+      <div class="contact-links">
+        <a class="contact-btn" href="https://www.instagram.com/csxet?stkn=MTk1cGF5eDJxOG9udg%3D%3D&amp;utm_source=qr" target="_blank" rel="noopener noreferrer" aria-label="حسابي على انستغرام">
+          <span class="contact-icon instagram">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.9" fill="currentColor" stroke="none"/></svg>
+          </span>
+          <span>انستغرام</span>
+          <span class="contact-handle">@csxet</span>
+        </a>
+        <a class="contact-btn" href="https://t.me/csxet" target="_blank" rel="noopener noreferrer" aria-label="حسابي على تليجرام">
+          <span class="contact-icon telegram">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+          </span>
+          <span>تليجرام</span>
+          <span class="contact-handle">@csxet</span>
+        </a>
+      </div>
+
+      <p class="about-label channel-label">وللانضمام إلى قناة التليجرام :</p>
+      <a class="channel-btn" href="https://t.me/csxett" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+        <span>قناة التليجرام</span>
+      </a>
+    </div>
+  </div>
+
   <div id="subject-view">
     <button class="back-btn" onclick="showHome()">→ رجوع للمواد</button>
     <h2 id="subject-title"></h2>
@@ -715,8 +853,6 @@
 
 </main>
 
-<footer>يتم التحديث بين فترة وفترة كل ما يضاف ملف جديد</footer>
-
 <nav class="bottom-nav" aria-label="التنقل الرئيسي">
   <div class="bottom-nav-inner">
     <button type="button" class="nav-item active" data-tab="library" onclick="showHome()" aria-current="page">
@@ -730,6 +866,14 @@
     <button type="button" class="nav-item" data-tab="news" onclick="showNews()">
       <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true">📰</span><span class="nav-dot" id="news-dot"></span></span>
       <span class="nav-label">آخر الأخبار</span>
+    </button>
+    <button type="button" class="nav-item" data-tab="soon" onclick="showSoon()">
+      <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true">🔜</span></span>
+      <span class="nav-label">منصة السادس</span>
+    </button>
+    <button type="button" class="nav-item" data-tab="about" onclick="showAbout()">
+      <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true">⚙️</span></span>
+      <span class="nav-label">إدارة الموقع</span>
     </button>
   </div>
 </nav>
@@ -1131,10 +1275,12 @@ const SCHEDULE_STATUS = {};
 
 const newsView = document.getElementById('news-view');
 const scheduleView = document.getElementById('schedule-view');
+const soonView = document.getElementById('soon-view');
+const aboutView = document.getElementById('about-view');
 const libraryStages = document.getElementById('library-stages');
 const scheduleStages = document.getElementById('schedule-stages');
 
-// تبدّل الشاشات الرئيسية الثلاث وشكل الهيدر والشريط. لا ترسم المحتوى بنفسها:
+// تبدّل الشاشات الرئيسية الخمس وشكل الهيدر والشريط. لا ترسم المحتوى بنفسها:
 // كل دالة show... تستدعي دالة الرسم (render...) الخاصة بها صراحة.
 function setActiveTab(tab){
   currentTab = tab;
@@ -1144,6 +1290,8 @@ function setActiveTab(tab){
   }
   newsView.style.display = tab === 'news' ? 'block' : 'none';
   scheduleView.style.display = tab === 'schedules' ? 'block' : 'none';
+  soonView.style.display = tab === 'soon' ? 'block' : 'none';
+  aboutView.style.display = tab === 'about' ? 'block' : 'none';
   libraryStages.style.display = tab === 'library' ? '' : 'none';
   scheduleStages.style.display = tab === 'schedules' ? '' : 'none';
   document.querySelectorAll('.nav-item').forEach(btn => {
@@ -1179,6 +1327,19 @@ async function showNews(){
   if(!NEWS_DATA.length) await loadNews();
   else renderNews();
   markNewsSeen();
+}
+
+// منصة السادس وإدارة الموقع شاشتين ثابتتين (بدون بيانات من قاعدة البيانات) فما تحتاج دالة رسم.
+function showSoon(){
+  currentSubjectIndex = null;
+  setActiveTab('soon');
+  window.scrollTo(0,0);
+}
+
+function showAbout(){
+  currentSubjectIndex = null;
+  setActiveTab('about');
+  window.scrollTo(0,0);
 }
 
 function showSchedules(){
@@ -1389,46 +1550,6 @@ grid.innerHTML = '<div class="empty">جاري تحميل المواد...</div>';
 loadDataFromSupabase();
 loadNews();
 </script>
-
-
-<style>
-.site-credit {
-  margin: 48px auto 28px;
-  padding: 24px 20px;
-  text-align: center;
-  color: #9aa3bb;
-  font-size: 16px;
-  line-height: 1.9;
-}
-.site-credit .creator {
-  color: #f2f2f2;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-.channel-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 12px;
-  padding: 12px 24px;
-  border-radius: 14px;
-  background: #229ED9;
-  color: #fff !important;
-  text-decoration: none !important;
-  font-weight: 700;
-}
-</style>
-
-<div class="site-credit">
-  <div class="creator">تم صنع الموقع بواسطة مجتبى حسن</div>
-  <div>للتواصل : @csxet</div>
-  <a class="channel-btn"
-     href="https://t.me/csxett"
-     target="_blank"
-     rel="noopener noreferrer">
-    قناة التليجرام
-  </a>
-</div>
 
 
 <script>
