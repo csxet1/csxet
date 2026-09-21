@@ -96,8 +96,7 @@
     opacity:0.6;
   }
   .content-switch{
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
+    display:flex;
     gap:10px;
     margin-bottom:24px;
   }
@@ -407,7 +406,6 @@
       <button type="button" id="mode-files-btn" class="active" onclick="switchAdminMode('files')">📚 إضافة مواد</button>
       <button type="button" id="mode-news-btn" onclick="switchAdminMode('news')">📰 آخر الأخبار</button>
       <button type="button" id="mode-schedules-btn" onclick="switchAdminMode('schedules')">📆 الجداول</button>
-      <button type="button" id="mode-exams-btn" onclick="switchAdminMode('exams')">📝 الأسئلة الوزارية</button>
     </div>
 
     <div id="files-mode" class="mode-screen">
@@ -416,9 +414,12 @@
     <div class="card">
       <form id="add-file-form" onsubmit="return submitFile(event)">
 
-        <label for="stage-select">المرحلة / القسم</label>
+        <label for="stage-select">المرحلة</label>
         <select id="stage-select" onchange="loadSubjects()">
-          <!-- تُملأ من stageOptionsHtml() بالسكربت: المراحل 1-4 (مكتبة الفيزياء) + الملازم/كتب الفيزياء/شروحات اليوتيوب (منصة السادس) -->
+          <option value="1">المرحلة الأولى</option>
+          <option value="2">المرحلة الثانية</option>
+          <option value="3">المرحلة الثالثة</option>
+          <option value="4">المرحلة الرابعة</option>
         </select>
 
         <label for="subject-select">المادة</label>
@@ -493,29 +494,6 @@
       </div>
     </div>
 
-    <div id="exams-mode" class="mode-screen hidden">
-      <h1>📝 الأسئلة الوزارية</h1>
-      <p class="subtitle">اختر السنة وارفع صور النسخة الوزارية، وستظهر مباشرة بمنصة السادس</p>
-      <div class="card">
-        <form id="exam-form" onsubmit="return submitExam(event)">
-          <label for="exam-year-select">السنة</label>
-          <select id="exam-year-select" onchange="loadExamsAdmin()"></select>
-
-          <label for="exam-text">النص (اختياري)</label>
-          <textarea class="admin-textarea" id="exam-text" maxlength="3000" placeholder="مثال: الدور الأول"></textarea>
-
-          <label for="exam-images">صور الأسئلة</label>
-          <input type="file" id="exam-images" accept="image/jpeg,image/png,image/webp,image/gif" multiple required onchange="showExamFilesNote()">
-          <div class="news-admin-note" id="exam-files-note">اختر عدة صور دفعة وحدة (الأسئلة عادة أكثر من صفحة). تظهر بالموقع بنفس ترتيب اختيارك، والنص يظهر فوق أول صورة. الحد الأقصى للصورة الواحدة 8MB وتُضغط تلقائياً.</div>
-
-          <button type="submit" class="btn-primary" id="exam-submit-btn">نشر الصور</button>
-          <div class="msg" id="exam-msg"></div>
-        </form>
-        <div class="news-count" id="exam-count">جاري تحميل الصور...</div>
-        <div id="exam-admin-list"></div>
-      </div>
-    </div>
-
     <div id="manage-section">
     <h1 style="margin-top:40px;">📂 إدارة الملفات الحالية</h1>
     <p class="subtitle">عدّل أو احذف أي ملف موجود</p>
@@ -539,22 +517,6 @@ const ADMIN_PASSWORD = "mojtaba200620065810";
 
 let allFiles = [];
 let allNews = [];
-
-// ===== أرقام المراحل / الأقسام =====
-// 1-4 = مكتبة الفيزياء (المراحل).  5-7 = منصة السادس (كلها تُخزَّن بجدول files بعمود stage).
-const STAGE_TAGS = {1:'م1', 2:'م2', 3:'م3', 4:'م4', 5:'ملازم', 6:'كتب', 7:'يوتيوب'};
-const MAX_NEWS_POSTS = 20;
-
-function stageOptionsHtml(selected){
-  const opt = (v, label) => `<option value="${v}" ${Number(selected) === v ? 'selected' : ''}>${label}</option>`;
-  return `
-    <optgroup label="مكتبة الفيزياء">
-      ${opt(1,'المرحلة الأولى')}${opt(2,'المرحلة الثانية')}${opt(3,'المرحلة الثالثة')}${opt(4,'المرحلة الرابعة')}
-    </optgroup>
-    <optgroup label="منصة السادس">
-      ${opt(5,'الملازم')}${opt(6,'كتب الفيزياء')}${opt(7,'شروحات اليوتيوب')}
-    </optgroup>`;
-}
 
 function checkPassword(){
   const entered = document.getElementById('password-input').value;
@@ -618,7 +580,7 @@ function renderManageList(filterText){
         <div class="file-row" id="row-${f.id}">
           <div class="file-row-view" id="view-${f.id}">
             <div class="file-row-info">
-              <div class="file-row-name">${escapeHtml(f.name)} <span class="stage-tag">${STAGE_TAGS[f.stage || 1] || ('م' + f.stage)}</span></div>
+              <div class="file-row-name">${escapeHtml(f.name)} <span class="stage-tag">م${f.stage || 1}</span></div>
               <span class="file-row-link">${escapeHtml(f.link)}</span>
             </div>
             <div class="file-row-actions">
@@ -631,8 +593,13 @@ function renderManageList(filterText){
             <input type="text" id="edit-name-${f.id}" value="${escapeHtml(f.name)}">
             <label>الرابط</label>
             <input type="url" id="edit-link-${f.id}" value="${escapeHtml(f.link)}">
-            <label>المرحلة / القسم</label>
-            <select id="edit-stage-${f.id}">${stageOptionsHtml(f.stage || 1)}</select>
+            <label>المرحلة</label>
+            <select id="edit-stage-${f.id}">
+              <option value="1" ${(f.stage||1)===1 ? 'selected' : ''}>المرحلة الأولى</option>
+              <option value="2" ${(f.stage||1)===2 ? 'selected' : ''}>المرحلة الثانية</option>
+              <option value="3" ${(f.stage||1)===3 ? 'selected' : ''}>المرحلة الثالثة</option>
+              <option value="4" ${(f.stage||1)===4 ? 'selected' : ''}>المرحلة الرابعة</option>
+            </select>
             <div class="edit-actions">
               <button class="btn-primary" onclick="saveEdit(${f.id})">حفظ</button>
               <button class="btn-secondary" onclick="cancelEdit(${f.id})">إلغاء</button>
@@ -708,7 +675,7 @@ async function deleteFile(id){
 
 
 function switchAdminMode(mode){
-  ['files','news','schedules','exams'].forEach(m => {
+  ['files','news','schedules'].forEach(m => {
     document.getElementById(`${m}-mode`).classList.toggle('hidden', m !== mode);
     document.getElementById(`mode-${m}-btn`).classList.toggle('active', m === mode);
   });
@@ -716,7 +683,6 @@ function switchAdminMode(mode){
   document.getElementById('manage-section').classList.toggle('hidden', mode !== 'files');
   if(mode === 'news') loadNewsAdmin();
   if(mode === 'schedules') loadSchedulesAdmin();
-  if(mode === 'exams') loadExamsAdmin();
 }
 
 async function loadNewsAdmin(){
@@ -725,7 +691,7 @@ async function loadNewsAdmin(){
   if(!list || !count) return;
   try{
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/news_posts?select=id,text,image_url,created_at&order=created_at.desc&limit=50`,
+      `${SUPABASE_URL}/rest/v1/news_posts?select=id,text,image_url,created_at&order=created_at.desc&limit=10`,
       {headers:{
         "apikey": SUPABASE_KEY,
         "Authorization": `Bearer ${SUPABASE_KEY}`
@@ -733,7 +699,7 @@ async function loadNewsAdmin(){
     );
     if(!res.ok) throw new Error(await res.text());
     allNews = await res.json();
-    count.textContent = `${allNews.length} / ${MAX_NEWS_POSTS} منشورات`;
+    count.textContent = `${allNews.length} / 10 منشورات`;
     renderNewsAdmin();
   }catch(err){
     count.textContent = 'تعذر تحميل المنشورات';
@@ -746,7 +712,7 @@ function renderNewsAdmin(){
   const list = document.getElementById('news-admin-list');
   const count = document.getElementById('news-count');
   if(!list || !count) return;
-  count.textContent = `${allNews.length} / ${MAX_NEWS_POSTS} منشورات`;
+  count.textContent = `${allNews.length} / 10 منشورات`;
   if(!allNews.length){
     list.innerHTML = '<p class="subtitle">لا توجد منشورات حالياً</p>';
     return;
@@ -848,8 +814,8 @@ async function submitNews(e){
     setNewsMessage('error','حجم الصورة أكبر من 8MB');
     return false;
   }
-  if(allNews.length >= MAX_NEWS_POSTS){
-    setNewsMessage('error',`وصلت للحد الأقصى: ${MAX_NEWS_POSTS} منشور. احذف منشوراً قديماً أولاً.`);
+  if(allNews.length >= 10){
+    setNewsMessage('error','وصلت للحد الأقصى: 10 منشورات. احذف منشوراً قديماً أولاً.');
     return false;
   }
 
@@ -884,8 +850,7 @@ async function submitNews(e){
     console.error(err);
     const detail = String(err && err.message || '');
     if(detail.includes('NEWS_LIMIT_REACHED')){
-      // لو ظهرت هذي الرسالة وانت ما وصلت 20، معناه إن تريغر قاعدة البيانات لسّا على الحد القديم: شغّل ملف sixth_platform_setup.sql
-      setNewsMessage('error',`رفضت قاعدة البيانات النشر لأنها وصلت لحدها (${MAX_NEWS_POSTS} منشور). احذف منشوراً قديماً، أو تأكد إنك شغّلت ملف sixth_platform_setup.sql بـ Supabase.`);
+      setNewsMessage('error','وصلت للحد الأقصى: 10 منشورات. احذف منشوراً قديماً أولاً.');
     }else if(detail.includes('Failed to fetch')){
       setNewsMessage('error','تعذر الاتصال بقاعدة البيانات. تحقق من الإنترنت ثم حاول مرة أخرى.');
     }else{
@@ -924,7 +889,7 @@ async function deleteNews(id){
 
 
 // ===== الجداول =====
-const MAX_SCHEDULES_PER_STAGE = 10;
+const MAX_SCHEDULES_PER_STAGE = 5;
 const STAGE_LABELS = {1:'الأولى', 2:'الثانية', 3:'الثالثة', 4:'الرابعة'};
 let allSchedules = [];
 let schedulesLoadedFor = null;
@@ -1089,273 +1054,7 @@ async function deleteSchedule(id){
   }
 }
 
-// ===== الأسئلة الوزارية =====
-const EXAM_FIRST_YEAR = 2013;
-const EXAM_LAST_YEAR = 2026;
-const MAX_EXAM_IMAGES_PER_YEAR = 20;   // الحد الأدنى المطلوب 4 صور لكل سنة، وهذا سقف مريح (غيّره هنا إذا تبي)
-let allExamPapers = [];
-let examsLoadedFor = null;
-
-function fillExamYears(){
-  const sel = document.getElementById('exam-year-select');
-  if(!sel) return;
-  let html = '';
-  for(let y = EXAM_FIRST_YEAR; y <= EXAM_LAST_YEAR; y++) html += `<option value="${y}">${y}</option>`;
-  sel.innerHTML = html;
-}
-
-function selectedExamYear(){
-  return Number(document.getElementById('exam-year-select').value);
-}
-
-function setExamMessage(type, text){
-  const msg = document.getElementById('exam-msg');
-  msg.className = `msg ${type || ''}`;
-  msg.textContent = text || '';
-}
-
-function showExamFilesNote(){
-  const note = document.getElementById('exam-files-note');
-  const files = document.getElementById('exam-images').files;
-  if(!files.length){
-    note.textContent = 'اختر عدة صور دفعة وحدة (الأسئلة عادة أكثر من صفحة). تظهر بالموقع بنفس ترتيب اختيارك، والنص يظهر فوق أول صورة. الحد الأقصى للصورة الواحدة 8MB وتُضغط تلقائياً.';
-    return;
-  }
-  note.textContent = `تم اختيار ${files.length} صور. الترتيب بالموقع: ` + [...files].map((f, i) => `${i + 1}) ${f.name}`).join(' ، ');
-}
-
-// ضغط الصورة وتحويلها لـ data URL. نجرب webp، وإذا المتصفح (مثل بعض إصدارات الآيفون) رجّع صيغة ثانية ثقيلة نستخدم jpeg.
-function compressToDataUrl(file, maxSide, quality){
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
-        canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
-        const ctx = canvas.getContext('2d');
-        if(!ctx) return reject(new Error('تعذر تجهيز الصورة'));
-        ctx.fillStyle = '#ffffff';                       // ورقة الأسئلة بيضاء؛ يمنع الخلفية السوداء لو الصورة شفافة
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(blob => {
-          if(blob && blob.type === 'image/webp') return blobToDataUrl(blob).then(resolve, reject);
-          canvas.toBlob(jpg => {
-            if(jpg) blobToDataUrl(jpg).then(resolve, reject);
-            else reject(new Error('تعذر ضغط الصورة'));
-          }, 'image/jpeg', quality);
-        }, 'image/webp', quality);
-      };
-      img.onerror = () => reject(new Error('الصورة غير صالحة أو غير مدعومة'));
-      img.src = reader.result;
-    };
-    reader.onerror = () => reject(new Error('تعذر قراءة الصورة من الجهاز'));
-    reader.readAsDataURL(file);
-  });
-}
-
-async function loadExamsAdmin(){
-  const list = document.getElementById('exam-admin-list');
-  const count = document.getElementById('exam-count');
-  const year = selectedExamYear();
-  examsLoadedFor = null;
-  allExamPapers = [];
-  count.textContent = 'جاري تحميل الصور...';
-  list.innerHTML = '';
-  try{
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/exam_papers?select=id,exam_year,text,image_url,created_at&exam_year=eq.${year}&order=created_at.asc,id.asc`,
-      {headers:{
-        "apikey": SUPABASE_KEY,
-        "Authorization": `Bearer ${SUPABASE_KEY}`
-      }, cache:'no-store'}
-    );
-    if(!res.ok) throw new Error(await res.text());
-    const rows = await res.json();
-    // تجاهل رد قديم إذا غيّر المستخدم السنة أثناء التحميل
-    if(year !== selectedExamYear()) return;
-    allExamPapers = rows;
-    examsLoadedFor = year;
-    renderExamsAdmin();
-  }catch(err){
-    console.error(err);
-    if(year !== selectedExamYear()) return;
-    const missing = /PGRST205|42P01/.test(String(err && err.message || ''));
-    count.textContent = missing
-      ? 'جدول الأسئلة الوزارية غير موجود بقاعدة البيانات. شغّل ملف sixth_platform_setup.sql بـ Supabase أولاً.'
-      : 'تعذر تحميل الصور';
-  }
-}
-
-function renderExamsAdmin(){
-  const list = document.getElementById('exam-admin-list');
-  const count = document.getElementById('exam-count');
-  const year = selectedExamYear();
-  count.textContent = `${allExamPapers.length} / ${MAX_EXAM_IMAGES_PER_YEAR} صورة لسنة ${year}`;
-  if(!allExamPapers.length){
-    list.innerHTML = '<p class="subtitle">لا توجد صور منشورة لهذي السنة</p>';
-    return;
-  }
-  list.innerHTML = `
-    <div class="news-admin-actions" style="margin-bottom:10px;">
-      <button type="button" class="btn-secondary" style="width:auto;padding:10px 16px;font-size:13px;color:var(--danger);" onclick="deleteExamYear()">🗑️ حذف كل صور سنة ${year}</button>
-    </div>` + allExamPapers.map((post, i) => `
-    <div class="news-admin-item">
-      <div class="news-count" style="margin:0;">صفحة ${i + 1}</div>
-      ${post.text ? `<div class="news-admin-text">${escapeHtml(post.text)}</div>` : ''}
-      <img src="${escapeHtml(post.image_url)}" alt="صفحة ${i + 1}" loading="lazy">
-      <div class="news-admin-actions">
-        <button type="button" class="icon-btn danger" onclick="deleteExamPaper(${Number(post.id)})" title="حذف الصورة">🗑️</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-// الرفع صورة صورة (طلب لكل صورة حتى ما يكبر الطلب الواحد). إذا فشلت صورة نحذف اللي انرفع بهذي الدفعة (كله أو ولا شي).
-async function rollbackExamRows(ids){
-  if(!ids.length) return true;
-  try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?id=in.(${ids.map(Number).join(',')})`, {
-      method:'DELETE',
-      headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-    });
-    return res.ok;
-  }catch(err){
-    return false;
-  }
-}
-
-async function submitExam(e){
-  e.preventDefault();
-  const year = selectedExamYear();
-  const textInput = document.getElementById('exam-text');
-  const imageInput = document.getElementById('exam-images');
-  const btn = document.getElementById('exam-submit-btn');
-  const text = textInput.value.trim();
-  const files = [...imageInput.files];
-
-  if(!files.length){
-    setExamMessage('error','الرجاء اختيار صورة واحدة على الأقل');
-    return false;
-  }
-  if(files.some(f => !f.type.startsWith('image/'))){
-    setExamMessage('error','أحد الملفات المختارة ليس صورة');
-    return false;
-  }
-  if(files.some(f => f.size > 8 * 1024 * 1024)){
-    setExamMessage('error','حجم إحدى الصور أكبر من 8MB');
-    return false;
-  }
-  if(examsLoadedFor !== year){
-    setExamMessage('error','لسّا يتم تحميل صور هذي السنة، انتظر لحظة وحاول مرة ثانية');
-    return false;
-  }
-  const remaining = MAX_EXAM_IMAGES_PER_YEAR - allExamPapers.length;
-  if(files.length > remaining){
-    setExamMessage('error', remaining > 0
-      ? `المتبقي لسنة ${year} هو ${remaining} صورة فقط، وانت اخترت ${files.length}. قلّل العدد أو احذف صوراً قديمة.`
-      : `وصلت للحد الأقصى: ${MAX_EXAM_IMAGES_PER_YEAR} صورة لسنة ${year}. احذف صوراً قديمة أولاً.`);
-    return false;
-  }
-
-  btn.disabled = true;
-  setExamMessage('', '');
-  const insertedIds = [];
-
-  try{
-    for(let i = 0; i < files.length; i++){
-      btn.textContent = `جاري رفع الصورة ${i + 1} من ${files.length}...`;
-      // أسئلة مكتوبة بخط صغير: دقة وجودة عالية مثل الجداول
-      const imageUrl = await compressToDataUrl(files[i], 1800, 0.85);
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?select=id`, {
-        method:'POST',
-        headers:{
-          "apikey": SUPABASE_KEY,
-          "Authorization": `Bearer ${SUPABASE_KEY}`,
-          "Content-Type":"application/json",
-          "Prefer":"return=representation"
-        },
-        // النص يُحفظ مع أول صورة فقط
-        body:JSON.stringify({exam_year:year, text: i === 0 ? text : '', image_url:imageUrl})
-      });
-      if(!res.ok){
-        const err = new Error(await res.text());
-        err.status = res.status;
-        throw err;
-      }
-      const created = await res.json();
-      if(Array.isArray(created) && created[0] && created[0].id != null) insertedIds.push(created[0].id);
-    }
-
-    setExamMessage('success',`✅ تم نشر ${files.length} صورة لسنة ${year}`);
-    textInput.value = '';
-    imageInput.value = '';
-    showExamFilesNote();
-  }catch(err){
-    console.error(err);
-    const rolledBack = await rollbackExamRows(insertedIds);
-    const detail = String(err && err.message || '');
-    let reason;
-    if(err && err.status === 409 || detail.includes('23505')){
-      reason = 'إحدى الصور منشورة مسبقاً لنفس السنة.';
-    }else if(detail.includes('PGRST205') || detail.includes('42P01')){
-      reason = 'جدول الأسئلة الوزارية غير موجود بقاعدة البيانات. شغّل ملف sixth_platform_setup.sql بـ Supabase أولاً.';
-    }else if(err && err.status === 413){
-      reason = 'حجم الصور كبير على الخادم. ارفع عدداً أقل من الصور بالمرة الوحدة.';
-    }else if(detail.includes('Failed to fetch')){
-      reason = 'تعذر الاتصال بقاعدة البيانات. تحقق من الإنترنت.';
-    }else{
-      reason = 'تعذر نشر الصور.';
-    }
-    setExamMessage('error', reason + (insertedIds.length
-      ? (rolledBack ? ' لم يُنشر شي، حاول مرة ثانية.' : ' ⚠️ انرفع جزء من الصور، راجع القائمة تحت واحذف الناقص أو المكرر.')
-      : ' حاول مرة ثانية.'));
-  }finally{
-    btn.disabled = false;
-    btn.textContent = 'نشر الصور';
-    await loadExamsAdmin();
-  }
-  return false;
-}
-
-async function deleteExamPaper(id){
-  if(!confirm('متأكد تبي تحذف هذي الصورة؟')) return;
-  try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?id=eq.${encodeURIComponent(id)}`, {
-      method:'DELETE',
-      headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-    });
-    if(!res.ok) throw new Error(await res.text());
-    await loadExamsAdmin();
-    setExamMessage('success','✅ تم حذف الصورة');
-  }catch(err){
-    console.error(err);
-    setExamMessage('error','حدث خطأ أثناء حذف الصورة');
-  }
-}
-
-async function deleteExamYear(){
-  const year = selectedExamYear();
-  if(!confirm(`متأكد تبي تحذف كل صور سنة ${year}؟ ما ينرجع.`)) return;
-  try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?exam_year=eq.${year}`, {
-      method:'DELETE',
-      headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-    });
-    if(!res.ok) throw new Error(await res.text());
-    await loadExamsAdmin();
-    setExamMessage('success',`✅ تم حذف كل صور سنة ${year}`);
-  }catch(err){
-    console.error(err);
-    setExamMessage('error','حدث خطأ أثناء الحذف');
-  }
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('stage-select').innerHTML = stageOptionsHtml(1);
-  fillExamYears();
   const searchInput = document.getElementById('manage-search');
   if(searchInput){
     searchInput.addEventListener('input', () => {
