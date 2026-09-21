@@ -1,4 +1,4 @@
-const CACHE_NAME = 'csxet-pwa-v5';
+const CACHE_NAME = 'csxet-pwa-v6';
 const BASE = new URL('./', self.registration.scope);
 const APP_SHELL = [
   new URL('./', BASE).href,

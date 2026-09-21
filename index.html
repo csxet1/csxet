@@ -137,7 +137,8 @@
     margin:0 auto;
     padding:36px 20px 100px;
   }
-  #home-view .grid{
+  #home-view .grid,
+  #sixth-grid{
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
     gap:16px;
@@ -588,16 +589,52 @@
     font-size:12px;
   }
 
-  /* ===== منصة السادس (قريباً) ===== */
-  .soon-view{display:none;}
-  .soon-text{
-    margin:0;
-    padding:90px 20px;
-    text-align:center;
-    font-size:clamp(30px,8vw,44px);
+  /* ===== منصة السادس ===== */
+  .sixth-view{display:none;}
+  .sub-title{
+    font-size:28px;
     font-weight:800;
-    color:var(--ink-muted);
+    margin:0 0 24px;
   }
+  .year-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+    max-width:520px;
+    margin:0 auto;
+  }
+  .year-btn{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    padding:16px 6px 14px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    color:var(--ink);
+    font-family:inherit;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    transition:border-color .15s ease, transform .1s ease;
+  }
+  .year-btn:hover{border-color:var(--accent);}
+  .year-btn:active{transform:scale(.96);}
+  .year-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .year-icon{font-size:22px; line-height:1.2;}
+  .year-num{font-size:22px; font-weight:800; line-height:1.3;}
+  .year-count{
+    font-size:11px;
+    font-weight:500;
+    color:var(--ink-muted);
+    min-height:1.4em;
+  }
+  .year-btn.is-empty{opacity:.55;}
+  .exam-text{border-bottom:1px solid var(--border);}
+  #sixth-subject-screen,
+  #sixth-exam-screen{display:none;}
+  #sixth-exams-screen{display:none;}
 
   /* ===== إدارة الموقع ===== */
   .about-view{display:none;}
@@ -770,6 +807,14 @@
       <button class="stage-btn" data-stage="4" onclick="switchScheduleStage(4)">المرحلة الرابعة</button>
     </div>
   </div>
+  <div class="stage-switch" id="sixth-stages" style="display:none;">
+    <div class="stage-grid">
+      <button class="stage-btn" data-section="notes" onclick="switchSixthSection('notes')">الملازم</button>
+      <button class="stage-btn" data-section="books" onclick="switchSixthSection('books')">كتب الفيزياء</button>
+      <button class="stage-btn" data-section="youtube" onclick="switchSixthSection('youtube')">شروحات اليوتيوب</button>
+      <button class="stage-btn" data-section="exams" onclick="switchSixthSection('exams')">الأسئلة الوزارية</button>
+    </div>
+  </div>
 </header>
 
 <main>
@@ -796,8 +841,34 @@
     <div class="schedule-list" id="schedule-list"></div>
   </div>
 
-  <div id="soon-view" class="soon-view">
-    <p class="soon-text">قريباً …</p>
+  <div id="sixth-view" class="sixth-view">
+
+    <!-- الملازم / كتب الفيزياء / شروحات اليوتيوب: بطاقات المواد (نفس نظام المراحل بمكتبة الفيزياء) -->
+    <div id="sixth-subjects-screen">
+      <div class="grid" id="sixth-grid"></div>
+    </div>
+    <div id="sixth-subject-screen">
+      <button class="back-btn" onclick="closeSixthSubject()">→ رجوع للمواد</button>
+      <h2 class="sub-title" id="sixth-subject-title"></h2>
+      <div class="file-list" id="sixth-subject-files"></div>
+    </div>
+
+    <!-- الأسئلة الوزارية: شبكة السنوات ثم صفحات السنة (نفس نظام الجداول) -->
+    <div id="sixth-exams-screen">
+      <div class="news-header">
+        <h2>الأسئلة الوزارية</h2>
+        <p>اختر السنة لعرض النسخة الوزارية</p>
+      </div>
+      <div class="year-grid" id="exam-years"></div>
+    </div>
+    <div id="sixth-exam-screen">
+      <button class="back-btn" onclick="closeExamYear()">→ رجوع للسنوات</button>
+      <div class="news-header">
+        <h2 id="exam-title"></h2>
+      </div>
+      <div class="schedule-list" id="exam-list"></div>
+    </div>
+
   </div>
 
   <div id="about-view" class="about-view">
@@ -867,8 +938,8 @@
       <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true">📰</span><span class="nav-dot" id="news-dot"></span></span>
       <span class="nav-label">آخر الأخبار</span>
     </button>
-    <button type="button" class="nav-item" data-tab="soon" onclick="showSoon()">
-      <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true">🔜</span></span>
+    <button type="button" class="nav-item" data-tab="sixth" onclick="showSixth()">
+      <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true">🎓</span></span>
       <span class="nav-label">منصة السادس</span>
     </button>
     <button type="button" class="nav-item" data-tab="about" onclick="showAbout()">
@@ -914,11 +985,17 @@ let ALL_ROWS = [];
 let ALL_SUBJECT_ROWS = [];
 let currentStage = 1;
 let NEWS_DATA = [];
+let FILES_STATUS = 'loading';   // loading | ok | error  (حالة تحميل جدول الملفات، تستخدمها منصة السادس)
+
+// سقف أمان لعدد ما يُجلب من قاعدة البيانات فقط. الحد الفعلي (20 منشور / 10 جداول لكل مرحلة)
+// يُفرض من صفحة الإدارة ومن قاعدة البيانات، فلا تربط هذي الأرقام به (درس: نسيان تغييرها يخفي المنشورات الجديدة).
+const NEWS_FETCH_LIMIT = 50;
+const SCHEDULE_FETCH_LIMIT = 30;
 
 async function loadNews(){
   try{
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/news_posts?select=id,text,image_url,created_at,likes&order=created_at.desc&limit=10`,
+      `${SUPABASE_URL}/rest/v1/news_posts?select=id,text,image_url,created_at,likes&order=created_at.desc&limit=${NEWS_FETCH_LIMIT}`,
       {
         headers: {
           "apikey": SUPABASE_KEY,
@@ -1030,10 +1107,12 @@ async function loadDataFromSupabase(){
 
     if(!filesRes.ok) throw new Error("FILES HTTP " + filesRes.status);
     ALL_ROWS = await filesRes.json();
+    FILES_STATUS = 'ok';
 
     // اعرض المواد فور وصول الملفات.
     buildSubjectsForStage(currentStage);
     renderHome();
+    if(currentTab === 'sixth') renderSixth();   // ⚠️ لو المستخدم فتح منصة السادس قبل وصول البيانات
 
     // جدول ترتيب المواد يُحمّل بشكل مستقل؛ إذا تأخر أو فشل لا يمنع الملفات من الظهور.
     try {
@@ -1047,6 +1126,7 @@ async function loadDataFromSupabase(){
       ALL_SUBJECT_ROWS = subjectsRes.ok ? await subjectsRes.json() : [];
       buildSubjectsForStage(currentStage);
       renderHome();
+      if(currentTab === 'sixth') renderSixth();
     } catch(subjectErr) {
       console.warn("تعذر تحميل ترتيب المواد، سيتم استخدام بيانات الملفات:", subjectErr);
       ALL_SUBJECT_ROWS = [];
@@ -1056,6 +1136,8 @@ async function loadDataFromSupabase(){
     ALL_ROWS = [];
     ALL_SUBJECT_ROWS = [];
     SUBJECTS_DATA = [];
+    FILES_STATUS = 'error';
+    if(currentTab === 'sixth') renderSixth();
     const grid = document.getElementById('subjects-grid');
     if(grid){
       grid.innerHTML = '<div class="empty">تعذر تحميل البيانات، حاول تحديث الصفحة</div>';
@@ -1063,7 +1145,9 @@ async function loadDataFromSupabase(){
   }
 }
 
-function buildSubjectsForStage(stage){
+// تبني قائمة المواد لمرحلة/قسم معيّن وترجعها (بدون ما تلمس المتغير العام).
+// المراحل 1-4 = مكتبة الفيزياء. الأرقام 5 (الملازم) و6 (كتب الفيزياء) و7 (شروحات اليوتيوب) = منصة السادس.
+function computeSubjects(stage){
   const fileRows = ALL_ROWS.filter(r => (r.stage || 1) === stage);
   const filesBySubject = new Map();
   fileRows.forEach(r => {
@@ -1081,10 +1165,14 @@ function buildSubjectsForStage(stage){
     if(!orderedNames.includes(name)) orderedNames.push(name);
   });
 
-  SUBJECTS_DATA = orderedNames.map(name => ({
+  return orderedNames.map(name => ({
     name,
     files: filesBySubject.get(name) || []
   }));
+}
+
+function buildSubjectsForStage(stage){
+  SUBJECTS_DATA = computeSubjects(stage);
 }
 
 function switchStage(stage){
@@ -1275,10 +1363,11 @@ const SCHEDULE_STATUS = {};
 
 const newsView = document.getElementById('news-view');
 const scheduleView = document.getElementById('schedule-view');
-const soonView = document.getElementById('soon-view');
+const sixthView = document.getElementById('sixth-view');
 const aboutView = document.getElementById('about-view');
 const libraryStages = document.getElementById('library-stages');
 const scheduleStages = document.getElementById('schedule-stages');
+const sixthStages = document.getElementById('sixth-stages');
 
 // تبدّل الشاشات الرئيسية الخمس وشكل الهيدر والشريط. لا ترسم المحتوى بنفسها:
 // كل دالة show... تستدعي دالة الرسم (render...) الخاصة بها صراحة.
@@ -1290,10 +1379,11 @@ function setActiveTab(tab){
   }
   newsView.style.display = tab === 'news' ? 'block' : 'none';
   scheduleView.style.display = tab === 'schedules' ? 'block' : 'none';
-  soonView.style.display = tab === 'soon' ? 'block' : 'none';
+  sixthView.style.display = tab === 'sixth' ? 'block' : 'none';
   aboutView.style.display = tab === 'about' ? 'block' : 'none';
   libraryStages.style.display = tab === 'library' ? '' : 'none';
   scheduleStages.style.display = tab === 'schedules' ? '' : 'none';
+  sixthStages.style.display = tab === 'sixth' ? '' : 'none';
   document.querySelectorAll('.nav-item').forEach(btn => {
     const on = btn.dataset.tab === tab;
     btn.classList.toggle('active', on);
@@ -1301,13 +1391,17 @@ function setActiveTab(tab){
   });
 }
 
-// تحدّث حالة "الأزرار المفعّلة" لمجموعتي المراحل، كل مجموعة لحالها.
+// تحدّث حالة "الأزرار المفعّلة" لمجموعات الأزرار الثلاث (المكتبة / الجداول / منصة السادس)، كل مجموعة لحالها.
+// ⚠️ لا تستخدم document.querySelectorAll('.stage-btn') على الكل وإلا تتداخل المجموعات.
 function syncStageButtons(){
   document.querySelectorAll('#library-stages .stage-btn').forEach(btn => {
     btn.classList.toggle('active', Number(btn.dataset.stage) === currentStage);
   });
   document.querySelectorAll('#schedule-stages .stage-btn').forEach(btn => {
     btn.classList.toggle('active', Number(btn.dataset.stage) === scheduleStage);
+  });
+  document.querySelectorAll('#sixth-stages .stage-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.section === sixthSection);
   });
 }
 
@@ -1329,13 +1423,7 @@ async function showNews(){
   markNewsSeen();
 }
 
-// منصة السادس وإدارة الموقع شاشتين ثابتتين (بدون بيانات من قاعدة البيانات) فما تحتاج دالة رسم.
-function showSoon(){
-  currentSubjectIndex = null;
-  setActiveTab('soon');
-  window.scrollTo(0,0);
-}
-
+// إدارة الموقع شاشة ثابتة (بدون بيانات من قاعدة البيانات) فما تحتاج دالة رسم.
 function showAbout(){
   currentSubjectIndex = null;
   setActiveTab('about');
@@ -1377,7 +1465,7 @@ async function loadSchedules(stage){
   if(!SCHEDULES_BY_STAGE[stage]) SCHEDULE_STATUS[stage] = 'loading';
   try{
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/schedules?select=id,text,image_url,created_at&stage=eq.${stage}&order=created_at.desc&limit=10`,
+      `${SUPABASE_URL}/rest/v1/schedules?select=id,text,image_url,created_at&stage=eq.${stage}&order=created_at.desc&limit=${SCHEDULE_FETCH_LIMIT}`,
       {
         headers: {
           "apikey": SUPABASE_KEY,
@@ -1442,6 +1530,264 @@ function renderSchedules(){
         </div>
       </article>`;
   }).join('');
+}
+
+// ===== منصة السادس =====
+// أقسام الملازم / كتب الفيزياء / شروحات اليوتيوب تستخدم نفس جدولي files و subjects
+// (بأرقام مراحل خاصة: 5 و6 و7)، فهي تشتغل بنفس طريقة المراحل بمكتبة الفيزياء.
+// قسم الأسئلة الوزارية يستخدم جدول exam_papers (نفس نظام الجداول: نص + صور).
+const SIXTH_SECTIONS = [
+  {key:'notes',   label:'الملازم',          stage:5},
+  {key:'books',   label:'كتب الفيزياء',     stage:6},
+  {key:'youtube', label:'شروحات اليوتيوب',  stage:7},
+  {key:'exams',   label:'الأسئلة الوزارية', stage:null}
+];
+const EXAM_FIRST_YEAR = 2013;
+const EXAM_LAST_YEAR = 2026;
+const EXAM_CACHE_MS = 3 * 60 * 1000;   // صور السنة ثقيلة نسبياً، فما نعيد جلبها إذا انفتحت قبل 3 دقايق
+
+let sixthSection = 'notes';
+let sixthSubjectName = null;   // المادة المفتوحة داخل القسم (null = قائمة المواد)
+let examYear = null;           // السنة المفتوحة (null = شبكة السنوات)
+let EXAM_COUNTS = null;        // {2019: 4, ...} أو null إذا لم يتحمّل بعد
+let examCountsLoading = false;
+const EXAM_BY_YEAR = {};       // {سنة: {rows, at}}
+const EXAM_STATUS = {};        // {سنة: 'loading' | 'ok' | 'error'}
+
+function sixthSectionDef(){
+  return SIXTH_SECTIONS.find(x => x.key === sixthSection) || SIXTH_SECTIONS[0];
+}
+
+function getSixthSubjects(){
+  const def = sixthSectionDef();
+  return def.stage ? computeSubjects(def.stage) : [];
+}
+
+function showSixth(){
+  currentSubjectIndex = null;
+  sixthSubjectName = null;
+  examYear = null;
+  setActiveTab('sixth');
+  syncStageButtons();
+  renderSixth();                                   // ⚠️ رسم صريح (درس الخطأ 4)
+  if(sixthSection === 'exams') loadExamCounts();
+  window.scrollTo(0,0);
+}
+
+function switchSixthSection(key){
+  sixthSection = key;
+  sixthSubjectName = null;
+  examYear = null;
+  syncStageButtons();
+  renderSixth();                                   // ⚠️ رسم صريح بعد تغيير القسم
+  if(key === 'exams') loadExamCounts();
+  window.scrollTo(0,0);
+}
+
+function openSixthSubject(i){
+  const subj = getSixthSubjects()[i];
+  if(!subj) return;
+  sixthSubjectName = subj.name;
+  renderSixth();
+  window.scrollTo(0,0);
+}
+
+function closeSixthSubject(){
+  sixthSubjectName = null;
+  renderSixth();
+  window.scrollTo(0,0);
+}
+
+function openExamYear(y){
+  examYear = y;
+  renderSixth();
+  loadExamYear(y);
+  window.scrollTo(0,0);
+}
+
+function closeExamYear(){
+  examYear = null;
+  renderSixth();
+  loadExamCounts();
+  window.scrollTo(0,0);
+}
+
+// ترسم الشاشة الصحيحة من بين 4 شاشات حسب القسم والحالة الحالية.
+function renderSixth(){
+  const isExams = sixthSection === 'exams';
+  const show = (id, on) => { document.getElementById(id).style.display = on ? 'block' : 'none'; };
+  show('sixth-subjects-screen', !isExams && sixthSubjectName === null);
+  show('sixth-subject-screen',  !isExams && sixthSubjectName !== null);
+  show('sixth-exams-screen',    isExams && examYear === null);
+  show('sixth-exam-screen',     isExams && examYear !== null);
+
+  if(!isExams){
+    renderSixthSubjects();
+    if(sixthSubjectName !== null) renderSixthSubject();
+  } else {
+    renderExamYears();
+    if(examYear !== null) renderExamPapers();
+  }
+}
+
+function renderSixthSubjects(){
+  const gridEl = document.getElementById('sixth-grid');
+  if(FILES_STATUS === 'loading'){
+    gridEl.innerHTML = '<div class="empty">جاري التحميل...</div>';
+    return;
+  }
+  if(FILES_STATUS === 'error'){
+    gridEl.innerHTML = '<div class="empty">تعذر تحميل البيانات، حاول تحديث الصفحة</div>';
+    return;
+  }
+  const list = getSixthSubjects();
+  if(!list.length){
+    gridEl.innerHTML = `<div class="empty">لا توجد مواد في قسم «${escapeHtml(sixthSectionDef().label)}» بعد</div>`;
+    return;
+  }
+  gridEl.innerHTML = list.map((subj, i) => `
+    <div class="subject-card" onclick="openSixthSubject(${i})">
+      <div class="name" style="padding-left:0;">${escapeHtml(subj.name)}</div>
+      <div class="count">${subj.files.length} ملف</div>
+    </div>`).join('');
+}
+
+function safeUrl(u){
+  return /^https?:\/\//i.test(String(u || '').trim()) ? String(u).trim() : '#';
+}
+
+function linkLabel(url){
+  try{
+    const h = new URL(url).hostname.replace(/^www\./, '');
+    if(/(^|\.)(youtube\.com|youtu\.be)$/.test(h)) return 'فتح في يوتيوب';
+    if(h === 't.me' || h === 'telegram.me' || h.endsWith('.t.me')) return 'فتح في تليجرام';
+  } catch(err){}
+  return 'فتح الرابط';
+}
+
+function renderSixthSubject(){
+  const subj = getSixthSubjects().find(x => x.name === sixthSubjectName);
+  if(!subj){            // المادة انحذفت أو تغيّرت بعد تحديث البيانات → رجوع لقائمة المواد
+    sixthSubjectName = null;
+    renderSixth();
+    return;
+  }
+  document.getElementById('sixth-subject-title').textContent = subj.name;
+  const filesEl = document.getElementById('sixth-subject-files');
+  if(!subj.files.length){
+    filesEl.innerHTML = '<div class="empty">لا توجد ملفات مضافة لهذي المادة بعد</div>';
+    return;
+  }
+  filesEl.innerHTML = subj.files.map(f => `
+    <div class="file-row">
+      <span class="fname">${escapeHtml(f.name)}</span>
+      <div class="right-actions">
+        <a href="${escapeHtml(safeUrl(f.link))}" target="_blank" rel="noopener noreferrer">${linkLabel(f.link)}</a>
+      </div>
+    </div>`).join('');
+}
+
+// "صورة واحدة / صورتان / 3 صور / 11 صورة"
+function imagesLabel(n){
+  if(n === 1) return 'صورة واحدة';
+  if(n === 2) return 'صورتان';
+  if(n >= 3 && n <= 10) return `${n} صور`;
+  return `${n} صورة`;
+}
+
+function renderExamYears(){
+  const el = document.getElementById('exam-years');
+  let html = '';
+  for(let y = EXAM_FIRST_YEAR; y <= EXAM_LAST_YEAR; y++){
+    const n = EXAM_COUNTS ? (EXAM_COUNTS[y] || 0) : null;   // null = العدد غير معروف (لم يتحمّل)
+    const sub = n === null ? '' : (n ? imagesLabel(n) : 'قريباً');
+    html += `
+      <button type="button" class="year-btn ${n === 0 ? 'is-empty' : ''}" onclick="openExamYear(${y})" aria-label="الأسئلة الوزارية ${y}">
+        <span class="year-icon" aria-hidden="true">📝</span>
+        <span class="year-num">${y}</span>
+        <span class="year-count">${sub}</span>
+      </button>`;
+  }
+  el.innerHTML = html;
+}
+
+async function loadExamCounts(){
+  if(examCountsLoading) return;
+  examCountsLoading = true;
+  try{
+    // نجلب عمود السنة فقط (بدون الصور) لنعرض عدد الصور على كل أيقونة
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?select=exam_year&limit=5000`, {
+      headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` },
+      cache: 'no-store'
+    });
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const rows = await res.json();
+    if(!Array.isArray(rows)) throw new Error("bad response");
+    const counts = {};
+    rows.forEach(r => { counts[r.exam_year] = (counts[r.exam_year] || 0) + 1; });
+    EXAM_COUNTS = counts;
+  } catch(err){
+    console.warn("تعذر تحميل عدد صور الأسئلة الوزارية:", err);   // نبقي آخر أعداد معروفة إن وُجدت
+  } finally {
+    examCountsLoading = false;
+  }
+  if(currentTab === 'sixth' && sixthSection === 'exams' && examYear === null) renderExamYears();
+}
+
+async function loadExamYear(year){
+  const cached = EXAM_BY_YEAR[year];
+  if(cached && Date.now() - cached.at < EXAM_CACHE_MS) return;
+  if(!cached){
+    EXAM_STATUS[year] = 'loading';
+  }
+  try{
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/exam_papers?select=id,text,image_url,created_at&exam_year=eq.${year}&order=created_at.asc,id.asc`,
+      {
+        headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` },
+        cache: 'no-store'
+      }
+    );
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const rows = await res.json();
+    if(!Array.isArray(rows)) throw new Error("bad response");
+    EXAM_BY_YEAR[year] = { rows, at: Date.now() };
+    EXAM_STATUS[year] = 'ok';
+    if(EXAM_COUNTS) EXAM_COUNTS[year] = rows.length;
+  } catch(err){
+    console.error("تعذر تحميل الأسئلة الوزارية:", err);
+    if(!EXAM_BY_YEAR[year]) EXAM_STATUS[year] = 'error';
+  }
+  // لا نرسم إلا إذا كان المستخدم لسّا على نفس السنة (حتى لا يطغى رد قديم على سنة أخرى)
+  if(currentTab === 'sixth' && sixthSection === 'exams' && examYear === year) renderExamPapers();
+}
+
+function renderExamPapers(){
+  const list = document.getElementById('exam-list');
+  document.getElementById('exam-title').textContent = `الأسئلة الوزارية ${examYear}`;
+  const entry = EXAM_BY_YEAR[examYear];
+  if(!entry){
+    list.innerHTML = EXAM_STATUS[examYear] === 'error'
+      ? '<div class="empty">تعذر تحميل الأسئلة، حاول تحديث الصفحة</div>'
+      : '<div class="empty">جاري التحميل...</div>';
+    return;
+  }
+  const rows = entry.rows;
+  if(!rows.length){
+    list.innerHTML = `<div class="empty">لم تُنشر النسخة الوزارية لسنة ${examYear} بعد</div>`;
+    return;
+  }
+  list.innerHTML = rows.map((post, i) => `
+    <article class="schedule-card">
+      ${post.text ? `<div class="news-body exam-text"><p class="news-text">${escapeHtml(post.text)}</p></div>` : ''}
+      <img class="schedule-image" src="${escapeHtml(post.image_url)}" alt="الأسئلة الوزارية ${examYear} - صفحة ${i + 1}" decoding="async">
+      <div class="news-body">
+        <div class="news-footer">
+          <span class="schedule-hint">صفحة ${i + 1} من ${rows.length}</span>
+          <span class="schedule-hint">اضغط على الصورة لتكبيرها</span>
+        </div>
+      </div>
+    </article>`).join('');
 }
 
 // ===== نقطة "جديد" على أيقونة آخر الأخبار =====
@@ -1510,9 +1856,11 @@ lbScroll.addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape' && lightbox.classList.contains('visible')) closeLightbox();
 });
-document.getElementById('schedule-list').addEventListener('click', e => {
-  const img = e.target.closest('.schedule-image');
-  if(img) openLightbox(img.src, img.alt);
+['schedule-list', 'exam-list'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    const img = e.target.closest('.schedule-image');
+    if(img) openLightbox(img.src, img.alt);
+  });
 });
 
 function escapeHtml(str){
