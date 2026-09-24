@@ -535,7 +535,9 @@
 <script>
 const SUPABASE_URL = "https://dwbnvmoqirwxyjbornwj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_s58MXnsC41yueDVhXBtpDA_ecfN9EWw";
-const ADMIN_PASSWORD = "mojtaba200620065810";
+// رابط الـ Worker (غيّره بعد إنشائه في Cloudflare)
+const UPLOAD_WORKER = "https://csxet-uploader.csxet.workers.dev";
+let adminPass = ''; // تبقى بالذاكرة فقط، والتحقق منها يتم بالـ Worker
 
 let allFiles = [];
 let allNews = [];
@@ -556,16 +558,29 @@ function stageOptionsHtml(selected){
     </optgroup>`;
 }
 
-function checkPassword(){
+async function checkPassword(){
   const entered = document.getElementById('password-input').value;
-  if(entered === ADMIN_PASSWORD){
+  const msg = document.getElementById('lock-msg');
+  msg.style.display = 'none';
+  try{
+    const res = await fetch(`${UPLOAD_WORKER}/auth`, {
+      method:'POST',
+      headers:{ "X-Admin-Password": entered }
+    });
+    if(!res.ok){
+      msg.textContent = res.status === 401 ? 'كلمة المرور غير صحيحة' : 'تعذر التحقق، حاول مرة أخرى';
+      msg.style.display = 'block';
+      return;
+    }
+    adminPass = entered;
     document.getElementById('lock-screen').style.display = 'none';
     document.getElementById('form-screen').style.display = 'block';
     loadSubjects();
     loadManageList();
     loadNewsAdmin();
-  } else {
-    document.getElementById('lock-msg').style.display = 'block';
+  }catch(err){
+    msg.textContent = 'تعذر الاتصال بالخادم، تحقق من الإنترنت';
+    msg.style.display = 'block';
   }
 }
 
@@ -809,6 +824,26 @@ function blobToDataUrl(blob){
   });
 }
 
+async function uploadToR2(blob){
+  const res = await fetch(`${UPLOAD_WORKER}/upload`, {
+    method:'POST',
+    headers:{ "X-Admin-Password": adminPass, "Content-Type": blob.type || 'image/webp' },
+    body: blob
+  });
+  if(!res.ok) throw new Error('R2_UPLOAD_FAILED ' + res.status);
+  const data = await res.json();
+  if(!data.url) throw new Error('R2_UPLOAD_FAILED no url');
+  return data.url;
+}
+
+async function deleteFromR2(url){
+  await fetch(`${UPLOAD_WORKER}/delete`, {
+    method:'POST',
+    headers:{ "X-Admin-Password": adminPass, "Content-Type":"application/json" },
+    body: JSON.stringify({url})
+  });
+}
+
 async function removeNewsImage(path){
   if(!path) return;
   await fetch(`${SUPABASE_URL}/storage/v1/object/news-images`, {
@@ -857,12 +892,12 @@ async function submitNews(e){
   btn.textContent = 'جاري الرفع...';
   setNewsMessage('', '');
 
+  let uploadedUrl = '';
   try{
     const compressed = await compressNewsImage(file);
-    const imageUrl = await blobToDataUrl(compressed);
-
-    // الصورة المضغوطة تُحفظ مع المنشور نفسه، لذلك لا يحتاج النشر إلى
-    // إنشاء Bucket أو إعطاء صلاحيات Storage إضافية.
+    // الصورة تُرفع إلى Cloudflare R2 عبر الـ Worker، وSupabase يحفظ الرابط فقط.
+    const imageUrl = await uploadToR2(compressed);
+    uploadedUrl = imageUrl;
     const res = await fetch(`${SUPABASE_URL}/rest/v1/news_posts`, {
       method:'POST',
       headers:{
@@ -874,6 +909,7 @@ async function submitNews(e){
       body:JSON.stringify({text, image_url:imageUrl})
     });
     if(!res.ok) throw new Error(await res.text());
+    uploadedUrl = '';
 
     setNewsMessage('success','✅ تم نشر المنشور بنجاح');
     textInput.value = '';
@@ -883,7 +919,11 @@ async function submitNews(e){
   }catch(err){
     console.error(err);
     const detail = String(err && err.message || '');
-    if(detail.includes('NEWS_LIMIT_REACHED')){
+    // لو انرفعت الصورة وفشل حفظ المنشور، نحذفها من R2 حتى ما تبقى يتيمة
+    if(uploadedUrl) deleteFromR2(uploadedUrl).catch(() => {});
+    if(detail.includes('R2_UPLOAD_FAILED')){
+      setNewsMessage('error','تعذر رفع الصورة إلى الخادم. حاول مرة أخرى.');
+    }else if(detail.includes('NEWS_LIMIT_REACHED')){
       // لو ظهرت هذي الرسالة وانت ما وصلت 20، معناه إن تريغر قاعدة البيانات لسّا على الحد القديم: شغّل ملف sixth_platform_setup.sql
       setNewsMessage('error',`رفضت قاعدة البيانات النشر لأنها وصلت لحدها (${MAX_NEWS_POSTS} منشور). احذف منشوراً قديماً، أو تأكد إنك شغّلت ملف sixth_platform_setup.sql بـ Supabase.`);
     }else if(detail.includes('Failed to fetch')){
@@ -913,6 +953,7 @@ async function deleteNews(id){
     if(!res.ok) throw new Error(await res.text());
     const path = getNewsStoragePath(post.image_url);
     if(path) await removeNewsImage(path).catch(err => console.warn('تعذر حذف الصورة القديمة:', err));
+    else if(/^https:\/\//.test(post.image_url || '')) await deleteFromR2(post.image_url).catch(err => console.warn('تعذر حذف الصورة من R2:', err));
     await loadNewsAdmin();
     await loadNews();
     setNewsMessage('success','✅ تم حذف المنشور');
