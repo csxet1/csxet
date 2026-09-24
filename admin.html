@@ -511,6 +511,7 @@
           <button type="submit" class="btn-primary" id="exam-submit-btn">نشر الصور</button>
           <div class="msg" id="exam-msg"></div>
         </form>
+        <button type="button" class="btn-secondary" id="exam-migrate-btn" style="margin:14px 0 6px;" onclick="migrateExamsToR2()">📦 نقل الصور القديمة إلى R2</button>
         <div class="news-count" id="exam-count">جاري تحميل الصور...</div>
         <div id="exam-admin-list"></div>
       </div>
@@ -803,8 +804,16 @@ function compressNewsImage(file, maxSide = 1200, quality = 0.75){
         if(!ctx) return reject(new Error('تعذر تجهيز الصورة'));
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         canvas.toBlob(blob => {
-          if(blob) resolve(blob);
-          else reject(new Error('تعذر ضغط الصورة'));
+          if(!blob) return reject(new Error('تعذر ضغط الصورة'));
+          if(blob.type === 'image/webp') return resolve(blob);
+          // سفاري على الآيفون لا يدعم WebP فيرجع PNG ثقيل، لذلك نستخدم JPEG بدله
+          ctx.globalCompositeOperation = 'destination-over';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          canvas.toBlob(jpg => {
+            if(jpg) resolve(jpg);
+            else reject(new Error('تعذر ضغط الصورة'));
+          }, 'image/jpeg', 0.8);
         }, 'image/webp', quality);
       };
       img.onerror = () => reject(new Error('الصورة غير صالحة أو غير مدعومة'));
@@ -824,8 +833,8 @@ function blobToDataUrl(blob){
   });
 }
 
-async function uploadToR2(blob){
-  const res = await fetch(`${UPLOAD_WORKER}/upload`, {
+async function uploadToR2(blob, folder = 'news'){
+  const res = await fetch(`${UPLOAD_WORKER}/upload?folder=${encodeURIComponent(folder)}`, {
     method:'POST',
     headers:{ "X-Admin-Password": adminPass, "Content-Type": blob.type || 'image/webp' },
     body: blob
@@ -1165,6 +1174,38 @@ function showExamFilesNote(){
   note.textContent = `تم اختيار ${files.length} صور. الترتيب بالموقع: ` + [...files].map((f, i) => `${i + 1}) ${f.name}`).join(' ، ');
 }
 
+// نفس ضغط الأسئلة لكن يرجّع Blob جاهز للرفع إلى R2
+function compressToBlob(file, maxSide, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+        const ctx = canvas.getContext('2d');
+        if(!ctx) return reject(new Error('تعذر تجهيز الصورة'));
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+          if(blob && blob.type === 'image/webp') return resolve(blob);
+          canvas.toBlob(jpg => {
+            if(jpg) resolve(jpg);
+            else reject(new Error('تعذر ضغط الصورة'));
+          }, 'image/jpeg', quality);
+        }, 'image/webp', quality);
+      };
+      img.onerror = () => reject(new Error('الصورة غير صالحة أو غير مدعومة'));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('تعذر قراءة الصورة من الجهاز'));
+    reader.readAsDataURL(file);
+  });
+}
+
 // ضغط الصورة وتحويلها لـ data URL. نجرب webp، وإذا المتصفح (مثل بعض إصدارات الآيفون) رجّع صيغة ثانية ثقيلة نستخدم jpeg.
 function compressToDataUrl(file, maxSide, quality){
   return new Promise((resolve, reject) => {
@@ -1304,12 +1345,15 @@ async function submitExam(e){
   btn.disabled = true;
   setExamMessage('', '');
   const insertedIds = [];
+  const uploadedUrls = [];
 
   try{
     for(let i = 0; i < files.length; i++){
       btn.textContent = `جاري رفع الصورة ${i + 1} من ${files.length}...`;
-      // أسئلة مكتوبة بخط صغير: دقة وجودة عالية مثل الجداول
-      const imageUrl = await compressToDataUrl(files[i], 1800, 0.85);
+      // أسئلة مكتوبة بخط صغير: دقة وجودة عالية، وتُرفع إلى R2 ويُحفظ الرابط فقط
+      const blob = await compressToBlob(files[i], 1800, 0.85);
+      const imageUrl = await uploadToR2(blob, 'exams');
+      uploadedUrls.push(imageUrl);
       const res = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?select=id`, {
         method:'POST',
         headers:{
@@ -1337,9 +1381,13 @@ async function submitExam(e){
   }catch(err){
     console.error(err);
     const rolledBack = await rollbackExamRows(insertedIds);
+    // نحذف من R2 كل صور هذي الدفعة حتى ما تبقى يتيمة
+    await Promise.all(uploadedUrls.map(u => deleteFromR2(u).catch(() => {})));
     const detail = String(err && err.message || '');
     let reason;
-    if(err && err.status === 409 || detail.includes('23505')){
+    if(detail.includes('R2_UPLOAD_FAILED')){
+      reason = 'تعذر رفع الصورة إلى الخادم.';
+    }else if(err && err.status === 409 || detail.includes('23505')){
       reason = 'إحدى الصور منشورة مسبقاً لنفس السنة.';
     }else if(detail.includes('PGRST205') || detail.includes('42P01')){
       reason = 'جدول الأسئلة الوزارية غير موجود بقاعدة البيانات. شغّل ملف sixth_platform_setup.sql بـ Supabase أولاً.';
@@ -1363,12 +1411,14 @@ async function submitExam(e){
 
 async function deleteExamPaper(id){
   if(!confirm('متأكد تبي تحذف هذي الصورة؟')) return;
+  const paper = allExamPapers.find(p => Number(p.id) === Number(id));
   try{
     const res = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?id=eq.${encodeURIComponent(id)}`, {
       method:'DELETE',
       headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
     });
     if(!res.ok) throw new Error(await res.text());
+    if(paper && /^https:\/\//.test(paper.image_url || '')) await deleteFromR2(paper.image_url).catch(() => {});
     await loadExamsAdmin();
     setExamMessage('success','✅ تم حذف الصورة');
   }catch(err){
@@ -1380,17 +1430,64 @@ async function deleteExamPaper(id){
 async function deleteExamYear(){
   const year = selectedExamYear();
   if(!confirm(`متأكد تبي تحذف كل صور سنة ${year}؟ ما ينرجع.`)) return;
+  const urls = allExamPapers.map(p => p.image_url).filter(u => /^https:\/\//.test(u || ''));
   try{
     const res = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?exam_year=eq.${year}`, {
       method:'DELETE',
       headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
     });
     if(!res.ok) throw new Error(await res.text());
+    await Promise.all(urls.map(u => deleteFromR2(u).catch(() => {})));
     await loadExamsAdmin();
     setExamMessage('success',`✅ تم حذف كل صور سنة ${year}`);
   }catch(err){
     console.error(err);
     setExamMessage('error','حدث خطأ أثناء الحذف');
+  }
+}
+
+// نقل الصور القديمة (base64 داخل Supabase) إلى R2 مرة وحدة. ما نحذف شي: ننسخ الصورة لـ R2 ثم نغيّر الرابط بالسجل فقط.
+async function migrateExamsToR2(){
+  if(!confirm('راح تنتقل كل صور الأسئلة الوزارية القديمة إلى R2. لا تغلق الصفحة أثناء النقل. تكمل؟')) return;
+  const btn = document.getElementById('exam-migrate-btn');
+  btn.disabled = true;
+  let done = 0, skipped = 0;
+  const H = { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` };
+  try{
+    const listRes = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?select=id&image_url=like.data:*&order=id.asc`, { headers:H });
+    if(!listRes.ok) throw new Error(await listRes.text());
+    const ids = (await listRes.json()).map(r => r.id);
+    if(!ids.length){
+      setExamMessage('success','ما توجد صور قديمة للنقل، كلها على R2 ✅');
+      return;
+    }
+    for(let i = 0; i < ids.length; i++){
+      btn.textContent = `جاري النقل ${i + 1} من ${ids.length}...`;
+      const rowRes = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?select=image_url&id=eq.${ids[i]}`, { headers:H });
+      if(!rowRes.ok) throw new Error(await rowRes.text());
+      const dataUrl = ((await rowRes.json())[0] || {}).image_url || '';
+      const blob = await (await fetch(dataUrl)).blob();
+      if(!['image/webp','image/jpeg','image/png'].includes(blob.type)){ skipped++; continue; }
+      const newUrl = await uploadToR2(blob, 'exams');
+      const patch = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?id=eq.${ids[i]}`, {
+        method:'PATCH',
+        headers:{ ...H, "Content-Type":"application/json", "Prefer":"return=minimal" },
+        body:JSON.stringify({ image_url:newUrl })
+      });
+      if(!patch.ok){
+        await deleteFromR2(newUrl).catch(() => {});
+        throw new Error(await patch.text());
+      }
+      done++;
+    }
+    setExamMessage('success', `✅ تم نقل ${done} صورة إلى R2` + (skipped ? ` (تخطينا ${skipped} بصيغة غير مدعومة)` : ''));
+  }catch(err){
+    console.error(err);
+    setExamMessage('error', `توقف النقل بعد ${done} صورة. الصور المنقولة سليمة، وتكدر تعيد الضغط لإكمال الباقي.`);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = '📦 نقل الصور القديمة إلى R2';
+    await loadExamsAdmin();
   }
 }
 
