@@ -38,6 +38,8 @@
     --nav-bg:#0d0a17;
     --nav-h:62px;
     --badge:#ee3a3f;
+    --accent-rgb:124,58,237;
+    --badge-rgb:238,58,63;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -784,11 +786,132 @@
     .stage-btn{padding:8px 14px; font-size:13px;}
     .news-list{grid-template-columns:1fr;}
   }
+
+  /* ================================================================
+     تصميم الواجهة الجديد — طبقة إضافية فقط (بدون أي تغيير على البيانات
+     أو المنطق البرمجي أو أسماء الـ id/class المستخدمة بالسكربت)
+     ================================================================ */
+
+  html{scroll-behavior:smooth;}
+
+  /* خلفية متحركة بنفس ألوان الموقع */
+  .bg-fx{position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none;}
+  .bg-fx .blob{position:absolute; border-radius:50%; filter:blur(90px); opacity:.28; animation:bgDrift 26s ease-in-out infinite;}
+  .bg-fx .blob-a{width:460px; height:460px; background:var(--accent); top:-14%; right:-10%;}
+  .bg-fx .blob-b{width:380px; height:380px; background:var(--badge); bottom:-16%; left:-8%; opacity:.14; animation-delay:-11s;}
+  .bg-fx .bg-grid{position:absolute; inset:0;
+    background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+    background-size:46px 46px;
+    -webkit-mask-image:radial-gradient(ellipse at 50% 0%, #000 40%, transparent 78%);
+    mask-image:radial-gradient(ellipse at 50% 0%, #000 40%, transparent 78%);
+  }
+  @keyframes bgDrift{0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(26px,-22px) scale(1.07);}}
+
+  /* بقعة ضوء خفيفة تتبع إصبع/مؤشر الزائر فوق الهيدر */
+  header{overflow:hidden;}
+  .header-spot{position:absolute; inset:0; pointer-events:none; z-index:0;
+    background:radial-gradient(280px circle at var(--mx,50%) var(--my,-30%), rgba(var(--accent-rgb),.18), transparent 70%);
+  }
+  header > *:not(.header-spot){position:relative; z-index:1;}
+
+  /* دخول أنعم عند التنقل بين الأقسام (لا يغيّر شرط العرض، فقط حركة الظهور) */
+  #home-view, #news-view, #schedule-view, #sixth-view, #about-view, #subject-view{
+    animation:viewIn .5s cubic-bezier(.22,.61,.36,1) both;
+  }
+  @keyframes viewIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+  /* توهج ولمعان أنعم على بطاقات المواد والأخبار */
+  .subject-card, .news-card{
+    transition:border-color .25s ease, transform .35s cubic-bezier(.22,.61,.36,1), box-shadow .35s ease;
+  }
+  .subject-card:hover, .news-card:hover{ box-shadow:0 16px 36px rgba(var(--accent-rgb),.18); }
+  .subject-card::after{
+    content:''; position:absolute; top:0; left:-60%; width:35%; height:100%;
+    background:linear-gradient(120deg, transparent, rgba(255,255,255,.06), transparent);
+    transform:skewX(-20deg); transition:left .6s ease; pointer-events:none;
+  }
+  .subject-card:hover::after{ left:140%; }
+
+  .stage-btn, .year-btn, .contact-btn, .add-card, .channel-btn{
+    transition:border-color .2s ease, color .2s ease, transform .2s cubic-bezier(.22,.61,.36,1), box-shadow .2s ease, background .2s ease;
+  }
+  .stage-btn:hover, .year-btn:hover, .contact-btn:hover{ box-shadow:0 8px 22px rgba(var(--accent-rgb),.14); }
+
+  /* دخول متدرّج لبطاقات شبكة المواد (نفس صنف subject-card بمكتبة الفيزياء ومنصة السادس) */
+  #home-view .grid .subject-card, #sixth-grid.grid .subject-card{ opacity:0; animation:cardIn .5s ease forwards; }
+  #home-view .grid .subject-card:nth-child(1), #sixth-grid.grid .subject-card:nth-child(1){animation-delay:.03s;}
+  #home-view .grid .subject-card:nth-child(2), #sixth-grid.grid .subject-card:nth-child(2){animation-delay:.08s;}
+  #home-view .grid .subject-card:nth-child(3), #sixth-grid.grid .subject-card:nth-child(3){animation-delay:.13s;}
+  #home-view .grid .subject-card:nth-child(4), #sixth-grid.grid .subject-card:nth-child(4){animation-delay:.18s;}
+  #home-view .grid .subject-card:nth-child(5), #sixth-grid.grid .subject-card:nth-child(5){animation-delay:.23s;}
+  #home-view .grid .subject-card:nth-child(6), #sixth-grid.grid .subject-card:nth-child(6){animation-delay:.28s;}
+  #home-view .grid .subject-card:nth-child(7), #sixth-grid.grid .subject-card:nth-child(7){animation-delay:.33s;}
+  #home-view .grid .subject-card:nth-child(n+8), #sixth-grid.grid .subject-card:nth-child(n+8){animation-delay:.38s;}
+  @keyframes cardIn{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+
+  @media (prefers-reduced-motion:reduce){
+    .bg-fx .blob{animation:none;}
+    #home-view, #news-view, #schedule-view, #sixth-view, #about-view, #subject-view{animation:none;}
+    #home-view .grid .subject-card, #sixth-grid.grid .subject-card{animation:none; opacity:1;}
+    html{scroll-behavior:auto;}
+  }
+
+  /* ================================================================
+     إضافة ثانية: تصميم بألوان الموقع التجريبي — يشمل فقط:
+     المراحل (مكتبة الفيزياء) + الجداول + منصة السادس
+     (آخر الأخبار وإدارة الموقع تبقى بالتحديث السابق بدون تغيير)
+     ================================================================ */
+  :root{
+    --demo-card:#1c2030;
+    --demo-border:#2a2f42;
+    --demo-glow:94,234,212;   /* تيل */
+    --demo-glow2:139,123,245; /* بنفسجي */
+  }
+
+  #home-view .subject-card,
+  #sixth-view .subject-card,
+  .schedule-card,
+  .year-btn{
+    background:linear-gradient(160deg, var(--demo-card), rgba(28,32,48,.55));
+    border-color:var(--demo-border);
+    padding-top:30px;
+  }
+  #home-view .subject-card:hover,
+  #sixth-view .subject-card:hover,
+  .schedule-card:hover,
+  .year-btn:hover{
+    border-color:rgba(var(--demo-glow),.55);
+    box-shadow:0 16px 36px rgba(var(--demo-glow),.18);
+  }
+
+  /* أيقونة كتاب زخرفية أعلى كل بطاقة، بنفس ألوان الملف التجريبي، بدون أي بيانات جديدة */
+  #home-view .subject-card::before,
+  #sixth-view .subject-card::before{
+    content:'📘'; display:block; font-size:2rem; text-align:center; margin-bottom:10px;
+    transition:transform .35s ease;
+  }
+  #home-view .subject-card:hover::before,
+  #sixth-view .subject-card:hover::before{ transform:scale(1.12) rotate(-4deg); }
+  #home-view .subject-card:nth-child(4n+2)::before, #sixth-view .subject-card:nth-child(4n+2)::before{ content:'📗'; }
+  #home-view .subject-card:nth-child(4n+3)::before, #sixth-view .subject-card:nth-child(4n+3)::before{ content:'📙'; }
+  #home-view .subject-card:nth-child(4n)::before,   #sixth-view .subject-card:nth-child(4n)::before{ content:'📕'; }
+
+  #home-view .subject-card .name, #sixth-view .subject-card .name{ text-align:center; padding-left:0; }
+  #home-view .subject-card .count, #sixth-view .subject-card .count{ text-align:center; }
+
+  .year-btn:focus-visible{ outline-color:rgba(var(--demo-glow),.8); }
 </style>
 </head>
 <body>
 
+<div class="bg-fx" aria-hidden="true">
+  <span class="blob blob-a"></span>
+  <span class="blob blob-b"></span>
+  <span class="bg-grid"></span>
+</div>
+
 <header>
+  <span class="header-spot" aria-hidden="true"></span>
   <h1>مكتبة الفيزياء</h1>
   <p></p>
   <div class="stage-switch" id="library-stages">
@@ -1904,6 +2027,23 @@ loadNews();
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
+</script>
+
+<!-- تصميم الواجهة الجديد: بقعة الضوء فوق الهيدر فقط — لا علاقة له ببيانات الموقع -->
+<script>
+(function(){
+  var header = document.querySelector('header');
+  if(!header) return;
+  function setPos(x, y){
+    var r = header.getBoundingClientRect();
+    header.style.setProperty('--mx', ((x - r.left) / r.width * 100) + '%');
+    header.style.setProperty('--my', ((y - r.top) / r.height * 100) + '%');
+  }
+  header.addEventListener('mousemove', function(e){ setPos(e.clientX, e.clientY); });
+  header.addEventListener('touchmove', function(e){
+    if(e.touches && e.touches[0]) setPos(e.touches[0].clientX, e.touches[0].clientY);
+  }, {passive:true});
+})();
 </script>
 </body>
 </html>
