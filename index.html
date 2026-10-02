@@ -22,7 +22,7 @@
 <meta name="twitter:image" content="https://csxet.netlify.app/og-image.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#120e1c;
@@ -932,9 +932,108 @@
   #home-view .subject-card .count, #sixth-view .subject-card .count{ text-align:center; }
 
   .year-btn:focus-visible{ outline-color:rgba(var(--demo-glow),.8); }
+
+  /* ===== شاشة التحميل: الثقب الأسود ===== */
+  #bh-loader{position:fixed; inset:0; z-index:200; overflow:hidden;
+    background:radial-gradient(70% 50% at 50% 42%, #1c1233 0%, var(--bg,#120e1c) 72%);
+    transition:opacity .9s ease, visibility .9s;}
+  #bh-loader.done{opacity:0; visibility:hidden; pointer-events:none;}
+  #bh-canvas{position:absolute; inset:0; width:100%; height:100%; display:block;}
+  .bh-eq{position:absolute; font-family:'Caveat',cursive; font-weight:600; color:rgba(255,255,255,.88);
+    font-size:clamp(17px,4.6vw,30px); white-space:nowrap; direction:ltr; opacity:0;
+    text-shadow:0 0 12px rgba(255,200,140,.25);
+    animation:bhIn 1.6s ease forwards, bhFloat 7s ease-in-out infinite;}
+  @keyframes bhIn{to{opacity:.9;}}
+  @keyframes bhFloat{50%{transform:translateY(-6px);}}
+  .bh-status{position:absolute; left:0; right:0; bottom:calc(7% + env(safe-area-inset-bottom,0px));
+    text-align:center; color:var(--ink-muted,#a89fc4); font-size:14px;}
+  .bh-status b{display:block; color:var(--ink,#f1eef8); font-size:18px; margin-bottom:4px;}
+  .bh-dots span{animation:bhB 1.2s infinite; opacity:.2;}
+  .bh-dots span:nth-child(2){animation-delay:.2s;}
+  .bh-dots span:nth-child(3){animation-delay:.4s;}
+  @keyframes bhB{50%{opacity:1;}}
+  @media (prefers-reduced-motion:reduce){.bh-eq{animation:bhIn 1s forwards;}}
 </style>
 </head>
 <body>
+
+<div id="bh-loader" role="status" aria-live="polite" aria-label="جاري التحميل">
+  <canvas id="bh-canvas"></canvas>
+  <span class="bh-eq" style="top:6%;left:6%">T = ħκ / 2π k<sub>B</sub> c</span>
+  <span class="bh-eq" style="top:13%;right:6%;animation-delay:.5s,.5s">A = 16π G²M² / c⁴</span>
+  <span class="bh-eq" style="top:20%;left:12%;animation-delay:2s,2s">S = k<sub>B</sub>c³ A / 4Għ</span>
+  <span class="bh-eq" style="bottom:23%;left:5%;animation-delay:1s,1s">δM = (κ/8πG) δA + Ω<sub>H</sub> δJ</span>
+  <span class="bh-eq" style="bottom:16%;right:6%;animation-delay:1.5s,1.5s">M = 2TS + …</span>
+  <div class="bh-status"><b>مكتبة الفيزياء</b>جاري التحميل<span class="bh-dots"><span>.</span><span>.</span><span>.</span></span></div>
+</div>
+<script>
+(function(){
+  var L=document.getElementById('bh-loader'), cv=document.getElementById('bh-canvas');
+  if(!L||!cv) return;
+  var ctx=cv.getContext('2d'), still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var W,H,R,dpr,raf=0, t0=performance.now(), finished=false;
+  var P=[],i;
+  for(i=0;i<1100;i++){var h=Math.random()<.22;
+    P.push({a:Math.random()*6.283,h:h,y:(Math.random()-.5)*.06,
+      r:h?1.06+Math.random()*.42:1.25+Math.pow(Math.random(),1.6)*2.3});}
+  var stars=[];for(i=0;i<90;i++)stars.push({x:Math.random(),y:Math.random(),s:Math.random()*1.2+.2});
+  var COL=['255,246,225','255,214,150','255,168,84','196,104,44'];
+  function size(){dpr=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;
+    cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);R=Math.min(W,H)*.13;}
+  function stroke(bucket,lw,alpha){
+    bucket.forEach(function(arr,ci){
+      for(var lvl=0;lvl<3;lvl++){
+        ctx.beginPath();
+        arr.forEach(function(s){var l=s[4]<.4?0:s[4]<.75?1:2;if(l===lvl){ctx.moveTo(s[0],s[1]);ctx.lineTo(s[2],s[3]);}});
+        ctx.strokeStyle='rgba('+COL[ci]+','+(alpha*(.35+.3*lvl))+')';ctx.lineWidth=lw;ctx.stroke();
+      }
+    });
+  }
+  function frame(t){
+    var s=t/1000;
+    ctx.clearRect(0,0,W,H);ctx.globalCompositeOperation='lighter';
+    stars.forEach(function(o){ctx.fillStyle='rgba(255,255,255,'+(.25+.25*Math.sin(s*1.3+o.x*20))+')';ctx.fillRect(o.x*W,o.y*H,o.s,o.s);});
+    var cx=W/2+Math.sin(s*.45)*W*.025, cy=H*.44+Math.cos(s*.35)*H*.012;
+    var tilt=.27+.05*Math.sin(s*.5), rot=-.13+.05*Math.sin(s*.3);
+    var g=ctx.createRadialGradient(cx,cy,R*.8,cx,cy,R*4.2);
+    g.addColorStop(0,'rgba(255,170,90,.22)');g.addColorStop(1,'rgba(255,170,90,0)');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(rot);
+    var back=[[],[],[],[]],front=[[],[],[],[]],halo=[[],[],[],[]];
+    P.forEach(function(p){
+      var w=(p.h?1.5:1)/Math.pow(p.r,1.5)*.9;
+      if(!still)p.a+=w*.016;
+      var ca=Math.cos(p.a),sa=Math.sin(p.a),rr=p.r*R,ty=p.h?1:tilt;
+      var a0=p.a-.11/p.r;
+      var seg=[Math.cos(a0)*rr,Math.sin(a0)*rr*ty+p.y*R,ca*rr,sa*rr*ty+p.y*R,.55+.45*ca];
+      var ci=Math.min(3,Math.floor((p.r-1)*1.4));
+      (p.h?halo:(sa<0?back:front))[ci].push(seg);
+    });
+    stroke(halo,1,.8);stroke(back,1.1,.85);
+    ctx.globalCompositeOperation='source-over';
+    ctx.fillStyle='#000';ctx.beginPath();ctx.arc(0,0,R,0,6.283);ctx.fill();
+    ctx.globalCompositeOperation='lighter';
+    ctx.shadowColor='rgba(255,200,130,.9)';ctx.shadowBlur=18;
+    ctx.strokeStyle='rgba(255,236,200,.85)';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(0,0,R*1.03,0,6.283);ctx.stroke();
+    ctx.shadowBlur=0;stroke(front,1.3,1);
+    ctx.restore();ctx.globalCompositeOperation='source-over';
+    if(!still&&!finished)raf=requestAnimationFrame(frame);
+  }
+  size();raf=requestAnimationFrame(frame);
+  addEventListener('resize',function(){size();if(still)frame(0);});
+
+  // الإخفاء: لما يجهز المحتوى، بحد أدنى قصير حتى ما تومض، وحد أقصى احتياطي
+  function finish(){
+    if(finished)return;finished=true;L.classList.add('done');
+    setTimeout(function(){cancelAnimationFrame(raf);L.remove();},1000);
+  }
+  window.hideSplash=function(){
+    var wait=Math.max(0,1200-(performance.now()-t0));
+    setTimeout(finish,wait);
+  };
+  setTimeout(finish,8000);
+})();
+</script>
 
 <div class="bg-fx" aria-hidden="true">
   <span class="blob blob-a"></span>
@@ -2051,7 +2150,7 @@ function copyExport(){
 }
 
 grid.innerHTML = '<div class="empty">جاري تحميل المواد...</div>';
-loadDataFromSupabase();
+Promise.resolve(loadDataFromSupabase()).finally(function(){ if(window.hideSplash) window.hideSplash(); });
 loadNews();
 </script>
 
