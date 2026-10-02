@@ -49,7 +49,7 @@
     font-family:'Tajawal',sans-serif;
     min-height:100vh;
     line-height:1.6;
-    padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+    padding-bottom:calc(var(--nav-h) + 22px + env(safe-area-inset-bottom, 0px));
   }
 
   header{
@@ -485,23 +485,46 @@
   }
 
 
-  /* ===== الشريط السفلي (نمط اختصارات انستغرام) ===== */
+  /* ===== الشريط السفلي (Opal liquid glass) ===== */
   .bottom-nav{
     position:fixed;
     right:0; left:0; bottom:0;
     z-index:25;
-    background:var(--nav-bg);
-    border-top:1px solid var(--border);
-    border-radius:18px 18px 0 0;
-    padding:0 8px env(safe-area-inset-bottom, 0px);
+    padding:0 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    pointer-events:none;
   }
   .bottom-nav-inner{
-    max-width:600px;
+    position:relative;
+    pointer-events:auto;
+    max-width:520px;
     margin:0 auto;
     height:var(--nav-h);
     display:flex;
+    padding:6px;
+    border-radius:999px;
+    background:rgba(13,10,23,.72);
+    -webkit-backdrop-filter:blur(18px) saturate(1.4);
+    backdrop-filter:blur(18px) saturate(1.4);
+    border:1px solid var(--border);
+    box-shadow:0 10px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
   }
-  .nav-item{
+  .nav-bead{
+    display:none;
+    position:absolute;
+    top:6px; bottom:6px; left:0; width:0;
+    border-radius:999px;
+    background:var(--accent);
+    box-shadow:0 0 22px rgba(var(--accent-rgb),.55);
+  }
+  .nav-faces{
+    display:none;
+    position:absolute; inset:0;
+    padding:6px;
+    pointer-events:none;
+  }
+  .bottom-nav.has-bead .nav-bead,
+  .bottom-nav.has-bead .nav-faces{display:flex;}
+  .nav-item, .nav-face{
     flex:1;
     min-width:0;
     background:none;
@@ -517,6 +540,10 @@
     cursor:pointer;
     -webkit-tap-highlight-color:transparent;
   }
+  .nav-face{color:var(--accent-ink); cursor:default;}
+  .nav-face .nav-icon{filter:none; opacity:1;}
+  .nav-face .nav-label{font-weight:800;}
+  .nav-icon svg{display:block; width:24px; height:24px;}
   .nav-icon-wrap{
     position:relative;
     display:block;
@@ -539,6 +566,7 @@
     text-overflow:ellipsis;
     max-width:100%;
   }
+  /* بدون JS (احتياط): الشكل القديم للتبويب النشط */
   .nav-item.active{color:var(--ink);}
   .nav-item.active .nav-icon{
     filter:none;
@@ -546,11 +574,15 @@
     transform:scale(1.1);
   }
   .nav-item.active .nav-label{font-weight:800;}
+  /* مع الخرزة: الوجه الملوّن يرسمه .nav-face */
+  .bottom-nav.has-bead .nav-item.active{color:var(--ink-muted);}
+  .bottom-nav.has-bead .nav-item.active .nav-icon{filter:grayscale(1); opacity:.55; transform:none;}
+  .bottom-nav.has-bead .nav-item.active .nav-label{font-weight:500;}
   .nav-item:active .nav-icon{transform:scale(.88);}
   .nav-item:focus-visible{
     outline:2px solid var(--accent);
     outline-offset:-4px;
-    border-radius:14px;
+    border-radius:999px;
   }
   .nav-dot{
     display:none;
@@ -1050,24 +1082,24 @@
 <nav class="bottom-nav" aria-label="التنقل الرئيسي">
   <div class="bottom-nav-inner">
     <button type="button" class="nav-item active" data-tab="library" onclick="showHome()" aria-current="page">
-      <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true">📚</span></span>
-      <span class="nav-label">مكتبة الفيزياء</span>
+      <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span></span>
+      <span class="nav-label">Home</span>
     </button>
     <button type="button" class="nav-item" data-tab="schedules" onclick="showSchedules()">
-      <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true">📆</span></span>
-      <span class="nav-label">الجداول</span>
+      <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M3 14.5h18M9.5 9.5V20"/></svg></span></span>
+      <span class="nav-label">Tables</span>
     </button>
     <button type="button" class="nav-item" data-tab="news" onclick="showNews()">
-      <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true">📰</span><span class="nav-dot" id="news-dot"></span></span>
-      <span class="nav-label">آخر الأخبار</span>
+      <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M6 3h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M8.5 12.5h7M8.5 16h7"/></svg></span><span class="nav-dot" id="news-dot"></span></span>
+      <span class="nav-label">Posts</span>
     </button>
     <button type="button" class="nav-item" data-tab="sixth" onclick="showSixth()">
-      <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true">🎓</span></span>
-      <span class="nav-label">منصة السادس</span>
+      <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="3.5" y="4" width="4" height="16" rx="1"/><rect x="9.5" y="4" width="4" height="16" rx="1"/><path d="m15.8 5.6 3.6-1 3.1 14.4-3.6 1z"/></svg></span></span>
+      <span class="nav-label">Library</span>
     </button>
     <button type="button" class="nav-item" data-tab="about" onclick="showAbout()">
-      <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true">⚙️</span></span>
-      <span class="nav-label">إدارة الموقع</span>
+      <span class="nav-icon-wrap"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span></span>
+      <span class="nav-label">Settings</span>
     </button>
   </div>
 </nav>
@@ -1512,6 +1544,7 @@ function setActiveTab(tab){
     btn.classList.toggle('active', on);
     if(on) btn.setAttribute('aria-current', 'page'); else btn.removeAttribute('aria-current');
   });
+  if(window.moveNavBead) window.moveNavBead();
 }
 
 // تحدّث حالة "الأزرار المفعّلة" لمجموعات الأزرار الثلاث (المكتبة / الجداول / منصة السادس)، كل مجموعة لحالها.
@@ -2043,6 +2076,63 @@ if ('serviceWorker' in navigator) {
   header.addEventListener('touchmove', function(e){
     if(e.touches && e.touches[0]) setPos(e.touches[0].clientX, e.touches[0].clientY);
   }, {passive:true});
+})();
+</script>
+<script>
+/* ===== Opal: خرزة الشريط السفلي (حركة زنبركية، الحافة الأمامية أسرع من الخلفية) ===== */
+(function(){
+  const nav=document.querySelector('.bottom-nav'), inner=nav&&nav.querySelector('.bottom-nav-inner');
+  if(!inner) return;
+  const items=[...inner.querySelectorAll('.nav-item')];
+  const bead=document.createElement('div'); bead.className='nav-bead'; bead.setAttribute('aria-hidden','true');
+  const faces=document.createElement('div'); faces.className='nav-faces'; faces.setAttribute('aria-hidden','true');
+  items.forEach(it=>{
+    const f=document.createElement('div'); f.className='nav-face';
+    [...it.children].forEach(c=>{
+      const k=c.cloneNode(true);
+      k.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
+      k.querySelectorAll('.nav-dot').forEach(e=>e.remove());
+      f.appendChild(k);
+    });
+    faces.appendChild(f);
+  });
+  inner.insertBefore(bead,inner.firstChild); inner.appendChild(faces);
+  nav.classList.add('has-bead');
+
+  class Spring{constructor(k){this.k=k;this.x=0;this.v=0;this.t=0}
+    step(dt){const c=2*Math.sqrt(this.k)*.9;this.v+=(this.k*(this.t-this.x)-c*this.v)*dt;this.x+=this.v*dt}
+    get rest(){return Math.abs(this.t-this.x)<.2&&Math.abs(this.v)<.5}}
+  const eL=new Spring(210), eR=new Spring(210);
+  const still=matchMedia('(prefers-reduced-motion:reduce)');
+  let raf=0,last=0,ready=false;
+
+  function paint(){
+    const w=inner.clientWidth;
+    bead.style.left=eL.x+'px'; bead.style.width=Math.max(0,eR.x-eL.x)+'px';
+    faces.style.clipPath='inset(6px '+(w-eR.x)+'px 6px '+eL.x+'px round 999px)';
+  }
+  function tick(t){
+    const dt=Math.min(.032,(t-last)/1000||.016); last=t;
+    eL.step(dt); eR.step(dt); paint();
+    if(eL.rest&&eR.rest){eL.x=eL.t;eR.x=eR.t;eL.v=eR.v=0;paint();raf=0;return}
+    raf=requestAnimationFrame(tick);
+  }
+  window.moveNavBead=function(snap){
+    const idx=Math.max(0,items.findIndex(i=>i.classList.contains('active')));
+    const b=items[idx].getBoundingClientRect(), p=inner.getBoundingClientRect();
+    const l=b.left-p.left-inner.clientLeft+2, r=b.right-p.left-inner.clientLeft-2;
+    if(snap===true||!ready||still.matches){
+      eL.x=eL.t=l; eR.x=eR.t=r; eL.v=eR.v=0; paint(); ready=b.width>0; return;
+    }
+    const toRight=l>eL.t;               // الحافة الأمامية تصل بسرعة والخلفية تتأخر = تمدّد
+    eL.k=toRight?128:230; eR.k=toRight?230:128;
+    eL.t=l; eR.t=r;
+    if(!raf){last=performance.now(); raf=requestAnimationFrame(tick);}
+  };
+  addEventListener('resize',()=>window.moveNavBead(true));
+  addEventListener('load',()=>window.moveNavBead(true));
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>window.moveNavBead(true));
+  window.moveNavBead(true);
 })();
 </script>
 </body>
