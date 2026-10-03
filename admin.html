@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#12141c">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32-v2.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-v2.png">
+<title>إضافة ملف - مكتبة الملخصات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#120e1c;
+    --surface:#1d1730;
+    --surface-raised:#291f42;
+    --ink:#f1eef8;
+    --ink-muted:#a89fc4;
+    --accent:#7c3aed;
+    --accent-ink:#f5f2fb;
+    --accent-soft:#2b2050;
+    --border:rgba(168,139,250,0.14);
+    --danger:#c0604f;
+    --success:#4caf7d;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Tajawal',sans-serif;
+    min-height:100vh;
+    line-height:1.6;
+  }
+  main{
+    max-width:480px;
+    margin:0 auto;
+    padding:40px 20px 80px;
+  }
+  h1{
+    font-size:24px;
+    font-weight:800;
+    text-align:center;
+    margin-bottom:8px;
+  }
+  .subtitle{
+    color:var(--ink-muted);
+    text-align:center;
+    font-size:14px;
+    margin-bottom:32px;
+  }
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:24px 20px;
+  }
+  label{
+    display:block;
+    font-size:14px;
+    font-weight:700;
+    margin-bottom:8px;
+    color:var(--ink-muted);
+  }
+  input, select{
+    width:100%;
+    background:var(--surface-raised);
+    border:1px solid var(--border);
+    color:var(--ink);
+    padding:12px 14px;
+    border-radius:10px;
+    font-family:inherit;
+    font-size:15px;
+    margin-bottom:18px;
+  }
+  input:focus, select:focus{
+    outline:none;
+    border-color:var(--accent);
+  }
+  button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    font-family:inherit;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-primary{
+    background:var(--accent);
+    color:var(--accent-ink);
+  }
+  .btn-primary:disabled{
+    opacity:0.6;
+  }
+  .content-switch{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    margin-bottom:24px;
+  }
+  .content-switch button{
+    background:var(--surface-raised);
+    color:var(--ink-muted);
+    border:1px solid var(--border);
+    font-size:14px;
+    padding:12px 4px;
+    line-height:1.3;
+  }
+  .content-switch button.active{
+    background:var(--accent);
+    color:var(--accent-ink);
+    border-color:var(--accent);
+  }
+  .msg{
+    margin-top:16px;
+    padding:12px 14px;
+    border-radius:10px;
+    font-size:14px;
+    text-align:center;
+    display:none;
+  }
+  .msg.success{
+    display:block;
+    background:rgba(76,175,125,0.15);
+    color:var(--success);
+    border:1px solid rgba(76,175,125,0.3);
+  }
+  .msg.error{
+    display:block;
+    background:rgba(192,96,79,0.15);
+    color:var(--danger);
+    border:1px solid rgba(192,96,79,0.3);
+  }
+  #lock-screen{
+    text-align:center;
+    padding-top:80px;
+  }
+  #lock-screen input{
+    text-align:center;
+  }
+  .back-link{
+    display:block;
+    text-align:center;
+    margin-top:24px;
+    color:var(--ink-muted);
+    text-decoration:none;
+    font-size:14px;
+  }
+  #manage-search-wrap{
+    margin-top:28px;
+  }
+  #manage-search{
+    margin-bottom:14px;
+  }
+  .subject-group{
+    margin-bottom:22px;
+  }
+  .subject-group-title{
+    font-size:15px;
+    font-weight:800;
+    color:var(--accent);
+    margin-bottom:10px;
+    padding-right:2px;
+  }
+  .file-row{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px;
+    margin-bottom:10px;
+  }
+  .file-row-view{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .file-row-info{
+    flex:1;
+    min-width:0;
+  }
+  .stage-tag{
+    display:inline-block;
+    background:var(--accent-soft);
+    color:var(--accent);
+    font-size:11px;
+    font-weight:700;
+    padding:2px 7px;
+    border-radius:999px;
+    margin-right:6px;
+  }
+  .file-row-name{
+    font-size:14.5px;
+    font-weight:700;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .file-row-link{
+    font-size:12px;
+    color:var(--ink-muted);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    direction:ltr;
+    text-align:right;
+    display:block;
+  }
+  .file-row-actions{
+    display:flex;
+    gap:8px;
+    flex-shrink:0;
+  }
+  .icon-btn{
+    width:38px;
+    height:38px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--surface-raised);
+    color:var(--ink);
+    font-size:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    padding:0;
+  }
+  .icon-btn.danger{
+    color:var(--danger);
+    border-color:rgba(192,96,79,0.4);
+  }
+  .file-row-edit{
+    display:none;
+  }
+  .file-row-edit input{
+    margin-bottom:10px;
+  }
+  .file-row-edit .edit-actions{
+    display:flex;
+    gap:8px;
+  }
+  .file-row-edit .edit-actions button{
+    flex:1;
+    padding:10px;
+    font-size:14px;
+  }
+  .btn-secondary{
+    background:var(--surface-raised);
+    color:var(--ink);
+    border:1px solid var(--border);
+  }
+
+
+  .news-view{display:none;}
+  .news-header{
+    text-align:center;
+    margin-bottom:24px;
+  }
+  .news-header h2{
+    font-size:28px;
+    font-weight:800;
+    margin:0 0 6px;
+  }
+  .news-header p{
+    margin:0;
+    color:var(--ink-muted);
+    font-size:14px;
+  }
+  .news-list{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:16px;
+  }
+  .news-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+  }
+  .news-image{
+    display:block;
+    width:100%;
+    aspect-ratio:16/10;
+    object-fit:cover;
+    background:var(--surface-raised);
+  }
+  .news-body{
+    padding:18px;
+  }
+  .news-text{
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    font-size:15px;
+    line-height:1.9;
+    margin:0;
+  }
+  .news-date{
+    color:var(--ink-muted);
+    font-size:12px;
+    margin-top:12px;
+  }
+  .news-empty{
+    grid-column:1/-1;
+  }
+
+  @media (max-width:560px){
+    .stage-switch{gap:6px; flex-wrap:wrap;}
+    .stage-btn{padding:8px 14px; font-size:13px;}
+    .news-list{grid-template-columns:1fr;}
+  }
+
+  .new-subject-toggle{
+    background:none;
+    border:none;
+    color:var(--accent);
+    font-size:13px;
+    padding:0 0 18px;
+    text-align:right;
+    width:auto;
+    cursor:pointer;
+  }
+
+  .hidden{
+    display:none !important;
+  }
+
+  /* نموذج الجداول + قوائم المنشورات (الأخبار والجداول) */
+  .admin-textarea{
+    width:100%;
+    min-height:140px;
+    resize:vertical;
+    background:var(--surface-raised);
+    border:1px solid var(--border);
+    color:var(--ink);
+    padding:12px 14px;
+    border-radius:10px;
+    font-family:inherit;
+    font-size:15px;
+    line-height:1.8;
+    margin-bottom:18px;
+  }
+  .admin-textarea:focus{outline:none; border-color:var(--accent);}
+  .news-admin-note{
+    color:var(--ink-muted);
+    font-size:12.5px;
+    margin:-8px 0 18px;
+  }
+  .news-count{
+    color:var(--ink-muted);
+    font-size:13px;
+    font-weight:700;
+    margin:22px 0 12px;
+  }
+  .news-admin-item{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    background:var(--surface-raised);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:10px;
+  }
+  .news-admin-item img{
+    display:block;
+    width:100%;
+    max-height:180px;
+    object-fit:contain;
+    border-radius:8px;
+    background:var(--bg);
+  }
+  .news-admin-text{
+    font-size:14px;
+    line-height:1.7;
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .news-admin-actions{
+    display:flex;
+    justify-content:flex-end;
+  }
+</style>
+</head>
+<body>
+
+<main>
+
+  <div id="lock-screen">
+    <h1>🔒 دخول الإدارة</h1>
+    <p class="subtitle">أدخل كلمة المرور للمتابعة</p>
+    <div class="card">
+      <input type="password" id="password-input" placeholder="كلمة المرور">
+      <button class="btn-primary" onclick="checkPassword()">دخول</button>
+      <div class="msg error" id="lock-msg">كلمة المرور غير صحيحة</div>
+    </div>
+  </div>
+
+  <div id="form-screen" style="display:none;">
+    <div class="content-switch" role="tablist" aria-label="نوع المحتوى">
+      <button type="button" id="mode-files-btn" class="active" onclick="switchAdminMode('files')">📚 إضافة مواد</button>
+      <button type="button" id="mode-news-btn" onclick="switchAdminMode('news')">📰 آخر الأخبار</button>
+      <button type="button" id="mode-schedules-btn" onclick="switchAdminMode('schedules')">📆 الجداول</button>
+      <button type="button" id="mode-exams-btn" onclick="switchAdminMode('exams')">📝 الأسئلة الوزارية</button>
+    </div>
+
+    <div id="files-mode" class="mode-screen">
+    <h1>➕ إضافة ملف جديد</h1>
+    <p class="subtitle">يُضاف الملف مباشرة لموقعك فور الحفظ</p>
+    <div class="card">
+      <form id="add-file-form" onsubmit="return submitFile(event)">
+
+        <label for="stage-select">المرحلة / القسم</label>
+        <select id="stage-select" onchange="loadSubjects()">
+          <!-- تُملأ من stageOptionsHtml() بالسكربت: المراحل 1-4 (مكتبة الفيزياء) + الملازم/كتب الفيزياء/شروحات اليوتيوب (منصة السادس) -->
+        </select>
+
+        <label for="subject-select">المادة</label>
+        <select id="subject-select" onchange="toggleNewSubject()">
+          <option value="">جاري تحميل المواد...</option>
+          <option value="__new__">+ مادة جديدة</option>
+        </select>
+
+        <div id="new-subject-wrap" style="display:none;">
+          <label for="new-subject-input">اسم المادة الجديدة</label>
+          <input type="text" id="new-subject-input" placeholder="مثال: فيزياء">
+        </div>
+
+        <label for="file-name">اسم الملف</label>
+        <input type="text" id="file-name" placeholder="مثال: ملخص الفصل الأول" required>
+
+        <label for="file-link">رابط الملف (تليجرام)</label>
+        <input type="url" id="file-link" placeholder="https://t.me/..." required>
+
+        <button type="submit" class="btn-primary" id="submit-btn">حفظ وإضافة</button>
+
+        <div class="msg" id="form-msg"></div>
+      </form>
+    </div>
+    </div>
+
+    <div id="news-mode" class="mode-screen hidden">
+      <h1>📰 آخر الأخبار</h1>
+      <p class="subtitle">اكتب المنشور وارفع صورته، وسيظهر مباشرة بالموقع</p>
+      <div class="card">
+        <form id="news-form" onsubmit="return submitNews(event)">
+          <label for="news-text">النص</label>
+          <textarea id="news-text" maxlength="3000" placeholder="اكتب نص المنشور هنا..." required style="width:100%;min-height:180px;resize:vertical;background:var(--surface-raised);border:1px solid var(--border);color:var(--ink);padding:12px 14px;border-radius:10px;font-family:inherit;font-size:15px;line-height:1.8;"></textarea>
+
+          <label for="news-image">الصورة</label>
+          <input class="file-input" type="file" id="news-image" accept="image/jpeg,image/png,image/webp,image/gif" required>
+          <div class="news-admin-note">يفضّل صورة واضحة. الحد الأقصى للملف الأصلي 8MB، وسيتم ضغط الصورة تلقائياً قبل الرفع.</div>
+
+          <button type="submit" class="btn-primary" id="news-submit-btn">نشر المنشور</button>
+          <div class="msg" id="news-msg"></div>
+        </form>
+        <div class="news-count" id="news-count">جاري تحميل المنشورات...</div>
+        <div class="news-admin-list" id="news-admin-list"></div>
+      </div>
+    </div>
+
+    <div id="schedules-mode" class="mode-screen hidden">
+      <h1>📆 الجداول</h1>
+      <p class="subtitle">اختر المرحلة وارفع صورة الجدول، وسيظهر مباشرة لطلاب هذي المرحلة بالموقع</p>
+      <div class="card">
+        <form id="schedule-form" onsubmit="return submitSchedule(event)">
+          <label for="schedule-stage-select">المرحلة</label>
+          <select id="schedule-stage-select" onchange="loadSchedulesAdmin()">
+            <option value="1">المرحلة الأولى</option>
+            <option value="2">المرحلة الثانية</option>
+            <option value="3">المرحلة الثالثة</option>
+            <option value="4">المرحلة الرابعة</option>
+          </select>
+
+          <label for="schedule-text">النص (اختياري)</label>
+          <textarea class="admin-textarea" id="schedule-text" maxlength="3000" placeholder="مثال: جدول الامتحانات النصفية"></textarea>
+
+          <label for="schedule-image">صورة الجدول</label>
+          <input type="file" id="schedule-image" accept="image/jpeg,image/png,image/webp,image/gif" required>
+          <div class="news-admin-note">الحد الأقصى للملف الأصلي 8MB، وتُضغط الصورة تلقائياً مع الحفاظ على وضوح الكتابة.</div>
+
+          <button type="submit" class="btn-primary" id="schedule-submit-btn">نشر الجدول</button>
+          <div class="msg" id="schedule-msg"></div>
+        </form>
+        <div class="news-count" id="schedule-count">جاري تحميل الجداول...</div>
+        <div id="schedule-admin-list"></div>
+      </div>
+    </div>
+
+    <div id="exams-mode" class="mode-screen hidden">
+      <h1>📝 الأسئلة الوزارية</h1>
+      <p class="subtitle">اختر السنة وارفع صور النسخة الوزارية، وستظهر مباشرة بمنصة السادس</p>
+      <div class="card">
+        <form id="exam-form" onsubmit="return submitExam(event)">
+          <label for="exam-year-select">السنة</label>
+          <select id="exam-year-select" onchange="loadExamsAdmin()"></select>
+
+          <label for="exam-text">النص (اختياري)</label>
+          <textarea class="admin-textarea" id="exam-text" maxlength="3000" placeholder="مثال: الدور الأول"></textarea>
+
+          <label for="exam-images">صور الأسئلة</label>
+          <input type="file" id="exam-images" accept="image/jpeg,image/png,image/webp,image/gif" multiple required onchange="showExamFilesNote()">
+          <div class="news-admin-note" id="exam-files-note">اختر عدة صور دفعة وحدة (الأسئلة عادة أكثر من صفحة). تظهر بالموقع بنفس ترتيب اختيارك، والنص يظهر فوق أول صورة. الحد الأقصى للصورة الواحدة 8MB وتُضغط تلقائياً.</div>
+
+          <button type="submit" class="btn-primary" id="exam-submit-btn">نشر الصور</button>
+          <div class="msg" id="exam-msg"></div>
+        </form>
+        <button type="button" class="btn-secondary" id="exam-migrate-btn" style="margin:14px 0 6px;" onclick="migrateExamsToR2()">📦 نقل الصور القديمة إلى R2</button>
+        <div class="news-count" id="exam-count">جاري تحميل الصور...</div>
+        <div id="exam-admin-list"></div>
+      </div>
+    </div>
+
+    <div id="manage-section">
+    <h1 style="margin-top:40px;">📂 إدارة الملفات الحالية</h1>
+    <p class="subtitle">عدّل أو احذف أي ملف موجود</p>
+    <div id="manage-search-wrap">
+      <input type="text" id="manage-search" placeholder="بحث باسم الملف أو المادة...">
+    </div>
+    <div id="manage-list">
+      <p class="subtitle">جاري التحميل...</p>
+    </div>
+    </div>
+
+    <a class="back-link" href="index.html">← رجوع للموقع</a>
+  </div>
+
+</main>
+
+<script>
+const SUPABASE_URL = "https://dwbnvmoqirwxyjbornwj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_s58MXnsC41yueDVhXBtpDA_ecfN9EWw";
+// رابط الـ Worker (غيّره بعد إنشائه في Cloudflare)
+const UPLOAD_WORKER = "https://csxet-uploader.csxet.workers.dev";
+let adminPass = ''; // تبقى بالذاكرة فقط، والتحقق منها يتم بالـ Worker
+
+let allFiles = [];
+let allNews = [];
+
+// ===== أرقام المراحل / الأقسام =====
+// 1-4 = مكتبة الفيزياء (المراحل).  5-7 = منصة السادس (كلها تُخزَّن بجدول files بعمود stage).
+const STAGE_TAGS = {1:'م1', 2:'م2', 3:'م3', 4:'م4', 5:'ملازم', 6:'كتب', 7:'يوتيوب'};
+const MAX_NEWS_POSTS = 20;
+
+function stageOptionsHtml(selected){
+  const opt = (v, label) => `<option value="${v}" ${Number(selected) === v ? 'selected' : ''}>${label}</option>`;
+  return `
+    <optgroup label="مكتبة الفيزياء">
+      ${opt(1,'المرحلة الأولى')}${opt(2,'المرحلة الثانية')}${opt(3,'المرحلة الثالثة')}${opt(4,'المرحلة الرابعة')}
+    </optgroup>
+    <optgroup label="منصة السادس">
+      ${opt(5,'الملازم')}${opt(6,'كتب الفيزياء')}${opt(7,'شروحات اليوتيوب')}
+    </optgroup>`;
+}
+
+async function checkPassword(){
+  const entered = document.getElementById('password-input').value;
+  const msg = document.getElementById('lock-msg');
+  msg.style.display = 'none';
+  try{
+    const res = await fetch(`${UPLOAD_WORKER}/auth`, {
+      method:'POST',
+      headers:{ "X-Admin-Password": entered }
+    });
+    if(!res.ok){
+      msg.textContent = res.status === 401 ? 'كلمة المرور غير صحيحة' : 'تعذر التحقق، حاول مرة أخرى';
+      msg.style.display = 'block';
+      return;
+    }
+    adminPass = entered;
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('form-screen').style.display = 'block';
+    loadSubjects();
+    loadManageList();
+    loadNewsAdmin();
+  }catch(err){
+    msg.textContent = 'تعذر الاتصال بالخادم، تحقق من الإنترنت';
+    msg.style.display = 'block';
+  }
+}
+
+async function loadManageList(){
+  const listEl = document.getElementById('manage-list');
+  try{
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/files?select=id,subject,name,link,stage&order=subject.asc,id.asc`,
+      {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`
+        }
+      }
+    );
+    allFiles = await res.json();
+    renderManageList();
+  } catch(err){
+    listEl.innerHTML = '<p class="subtitle">تعذر تحميل القائمة</p>';
+  }
+}
+
+function renderManageList(filterText){
+  const listEl = document.getElementById('manage-list');
+  const q = (filterText || '').trim().toLowerCase();
+
+  const filtered = q
+    ? allFiles.filter(f =>
+        f.name.toLowerCase().includes(q) ||
+        f.subject.toLowerCase().includes(q))
+    : allFiles;
+
+  if(filtered.length === 0){
+    listEl.innerHTML = '<p class="subtitle">لا توجد نتائج</p>';
+    return;
+  }
+
+  const grouped = new Map();
+  filtered.forEach(f => {
+    if(!grouped.has(f.subject)) grouped.set(f.subject, []);
+    grouped.get(f.subject).push(f);
+  });
+
+  let html = '';
+  grouped.forEach((files, subject) => {
+    html += `<div class="subject-group">
+      <div class="subject-group-title">${escapeHtml(subject)} (${files.length})</div>`;
+    files.forEach(f => {
+      html += `
+        <div class="file-row" id="row-${f.id}">
+          <div class="file-row-view" id="view-${f.id}">
+            <div class="file-row-info">
+              <div class="file-row-name">${escapeHtml(f.name)} <span class="stage-tag">${STAGE_TAGS[f.stage || 1] || ('م' + f.stage)}</span></div>
+              <span class="file-row-link">${escapeHtml(f.link)}</span>
+            </div>
+            <div class="file-row-actions">
+              <button class="icon-btn" onclick="startEdit(${f.id})" title="تعديل">✏️</button>
+              <button class="icon-btn danger" onclick="deleteFile(${f.id})" title="حذف">🗑️</button>
+            </div>
+          </div>
+          <div class="file-row-edit" id="edit-${f.id}">
+            <label>اسم الملف</label>
+            <input type="text" id="edit-name-${f.id}" value="${escapeHtml(f.name)}">
+            <label>الرابط</label>
+            <input type="url" id="edit-link-${f.id}" value="${escapeHtml(f.link)}">
+            <label>المرحلة / القسم</label>
+            <select id="edit-stage-${f.id}">${stageOptionsHtml(f.stage || 1)}</select>
+            <div class="edit-actions">
+              <button class="btn-primary" onclick="saveEdit(${f.id})">حفظ</button>
+              <button class="btn-secondary" onclick="cancelEdit(${f.id})">إلغاء</button>
+            </div>
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+  });
+
+  listEl.innerHTML = html;
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function startEdit(id){
+  document.getElementById(`view-${id}`).style.display = 'none';
+  document.getElementById(`edit-${id}`).style.display = 'block';
+}
+
+function cancelEdit(id){
+  document.getElementById(`view-${id}`).style.display = 'flex';
+  document.getElementById(`edit-${id}`).style.display = 'none';
+}
+
+async function saveEdit(id){
+  const name = document.getElementById(`edit-name-${id}`).value.trim();
+  const link = document.getElementById(`edit-link-${id}`).value.trim();
+  const stage = Number(document.getElementById(`edit-stage-${id}`).value);
+  if(!name || !link) return;
+
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/files?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({ name, link, stage })
+    });
+    if(!res.ok) throw new Error(await res.text());
+    await loadManageList();
+  } catch(err){
+    alert('حدث خطأ أثناء الحفظ');
+    console.error(err);
+  }
+}
+
+async function deleteFile(id){
+  if(!confirm('متأكد تبي تحذف هذا الملف؟')) return;
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/files?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`
+      }
+    });
+    if(!res.ok) throw new Error(await res.text());
+    allFiles = allFiles.filter(f => f.id !== id);
+    renderManageList(document.getElementById('manage-search').value);
+  } catch(err){
+    alert('حدث خطأ أثناء الحذف');
+    console.error(err);
+  }
+}
+
+
+function switchAdminMode(mode){
+  ['files','news','schedules','exams'].forEach(m => {
+    document.getElementById(`${m}-mode`).classList.toggle('hidden', m !== mode);
+    document.getElementById(`mode-${m}-btn`).classList.toggle('active', m === mode);
+  });
+  // قائمة "إدارة الملفات الحالية" تخص تبويب المواد فقط
+  document.getElementById('manage-section').classList.toggle('hidden', mode !== 'files');
+  if(mode === 'news') loadNewsAdmin();
+  if(mode === 'schedules') loadSchedulesAdmin();
+  if(mode === 'exams') loadExamsAdmin();
+}
+
+async function loadNewsAdmin(){
+  const list = document.getElementById('news-admin-list');
+  const count = document.getElementById('news-count');
+  if(!list || !count) return;
+  try{
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/news_posts?select=id,text,image_url,created_at&order=created_at.desc&limit=50`,
+      {headers:{
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`
+      }}
+    );
+    if(!res.ok) throw new Error(await res.text());
+    allNews = await res.json();
+    count.textContent = `${allNews.length} / ${MAX_NEWS_POSTS} منشورات`;
+    renderNewsAdmin();
+  }catch(err){
+    count.textContent = 'تعذر تحميل المنشورات';
+    list.innerHTML = '';
+    console.error(err);
+  }
+}
+
+function renderNewsAdmin(){
+  const list = document.getElementById('news-admin-list');
+  const count = document.getElementById('news-count');
+  if(!list || !count) return;
+  count.textContent = `${allNews.length} / ${MAX_NEWS_POSTS} منشورات`;
+  if(!allNews.length){
+    list.innerHTML = '<p class="subtitle">لا توجد منشورات حالياً</p>';
+    return;
+  }
+  list.innerHTML = allNews.map(post => `
+    <div class="news-admin-item">
+      <img src="${escapeHtml(post.image_url)}" alt="صورة المنشور" loading="lazy">
+      <div class="news-admin-text">${escapeHtml(post.text)}</div>
+      <div class="news-admin-actions">
+        <button type="button" class="icon-btn danger" onclick="deleteNews(${Number(post.id)})" title="حذف المنشور">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function setNewsMessage(type, text){
+  const msg = document.getElementById('news-msg');
+  msg.className = `msg ${type || ''}`;
+  msg.textContent = text || '';
+}
+
+function safeStorageName(){
+  return `news/${Date.now()}-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)}.webp`;
+}
+
+function compressNewsImage(file, maxSide = 1200, quality = 0.75){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        // نخزن الصورة المضغوطة داخل سجل المنشور نفسه حتى لا يعتمد النشر
+        // على إعدادات Storage أو صلاحيات مجلد خارجي، وهذا أكثر ثباتاً على الآيفون.
+        const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+        const ctx = canvas.getContext('2d');
+        if(!ctx) return reject(new Error('تعذر تجهيز الصورة'));
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+          if(!blob) return reject(new Error('تعذر ضغط الصورة'));
+          if(blob.type === 'image/webp') return resolve(blob);
+          // سفاري على الآيفون لا يدعم WebP فيرجع PNG ثقيل، لذلك نستخدم JPEG بدله
+          ctx.globalCompositeOperation = 'destination-over';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          canvas.toBlob(jpg => {
+            if(jpg) resolve(jpg);
+            else reject(new Error('تعذر ضغط الصورة'));
+          }, 'image/jpeg', 0.8);
+        }, 'image/webp', quality);
+      };
+      img.onerror = () => reject(new Error('الصورة غير صالحة أو غير مدعومة'));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('تعذر قراءة الصورة من الجهاز'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function blobToDataUrl(blob){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('تعذر تجهيز الصورة للنشر'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function uploadToR2(blob, folder = 'news'){
+  const res = await fetch(`${UPLOAD_WORKER}/upload?folder=${encodeURIComponent(folder)}`, {
+    method:'POST',
+    headers:{ "X-Admin-Password": adminPass, "Content-Type": blob.type || 'image/webp' },
+    body: blob
+  });
+  if(!res.ok) throw new Error('R2_UPLOAD_FAILED ' + res.status);
+  const data = await res.json();
+  if(!data.url) throw new Error('R2_UPLOAD_FAILED no url');
+  return data.url;
+}
+
+async function deleteFromR2(url){
+  await fetch(`${UPLOAD_WORKER}/delete`, {
+    method:'POST',
+    headers:{ "X-Admin-Password": adminPass, "Content-Type":"application/json" },
+    body: JSON.stringify({url})
+  });
+}
+
+async function removeNewsImage(path){
+  if(!path) return;
+  await fetch(`${SUPABASE_URL}/storage/v1/object/news-images`, {
+    method:'DELETE',
+    headers:{
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`,
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({prefixes:[path]})
+  });
+}
+
+function getNewsStoragePath(url){
+  const marker = '/storage/v1/object/public/news-images/';
+  const i = String(url || '').indexOf(marker);
+  return i >= 0 ? String(url).slice(i + marker.length) : '';
+}
+
+async function submitNews(e){
+  e.preventDefault();
+  const textInput = document.getElementById('news-text');
+  const imageInput = document.getElementById('news-image');
+  const btn = document.getElementById('news-submit-btn');
+  const text = textInput.value.trim();
+  const file = imageInput.files[0];
+
+  if(!text || !file){
+    setNewsMessage('error','الرجاء كتابة النص واختيار الصورة');
+    return false;
+  }
+  if(!file.type.startsWith('image/')){
+    setNewsMessage('error','الملف المختار ليس صورة');
+    return false;
+  }
+  if(file.size > 8 * 1024 * 1024){
+    setNewsMessage('error','حجم الصورة أكبر من 8MB');
+    return false;
+  }
+  if(allNews.length >= MAX_NEWS_POSTS){
+    setNewsMessage('error',`وصلت للحد الأقصى: ${MAX_NEWS_POSTS} منشور. احذف منشوراً قديماً أولاً.`);
+    return false;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'جاري الرفع...';
+  setNewsMessage('', '');
+
+  let uploadedUrl = '';
+  try{
+    const compressed = await compressNewsImage(file);
+    // الصورة تُرفع إلى Cloudflare R2 عبر الـ Worker، وSupabase يحفظ الرابط فقط.
+    const imageUrl = await uploadToR2(compressed);
+    uploadedUrl = imageUrl;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/news_posts`, {
+      method:'POST',
+      headers:{
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type":"application/json",
+        "Prefer":"return=minimal"
+      },
+      body:JSON.stringify({text, image_url:imageUrl})
+    });
+    if(!res.ok) throw new Error(await res.text());
+    uploadedUrl = '';
+
+    setNewsMessage('success','✅ تم نشر المنشور بنجاح');
+    textInput.value = '';
+    imageInput.value = '';
+    await loadNewsAdmin();
+    await loadNews();
+  }catch(err){
+    console.error(err);
+    const detail = String(err && err.message || '');
+    // لو انرفعت الصورة وفشل حفظ المنشور، نحذفها من R2 حتى ما تبقى يتيمة
+    if(uploadedUrl) deleteFromR2(uploadedUrl).catch(() => {});
+    if(detail.includes('R2_UPLOAD_FAILED')){
+      setNewsMessage('error','تعذر رفع الصورة إلى الخادم. حاول مرة أخرى.');
+    }else if(detail.includes('NEWS_LIMIT_REACHED')){
+      // لو ظهرت هذي الرسالة وانت ما وصلت 20، معناه إن تريغر قاعدة البيانات لسّا على الحد القديم: شغّل ملف sixth_platform_setup.sql
+      setNewsMessage('error',`رفضت قاعدة البيانات النشر لأنها وصلت لحدها (${MAX_NEWS_POSTS} منشور). احذف منشوراً قديماً، أو تأكد إنك شغّلت ملف sixth_platform_setup.sql بـ Supabase.`);
+    }else if(detail.includes('Failed to fetch')){
+      setNewsMessage('error','تعذر الاتصال بقاعدة البيانات. تحقق من الإنترنت ثم حاول مرة أخرى.');
+    }else{
+      setNewsMessage('error','تعذر نشر المنشور. حاول مرة أخرى.');
+    }
+  }finally{
+    btn.disabled = false;
+    btn.textContent = 'نشر المنشور';
+  }
+  return false;
+}
+
+async function deleteNews(id){
+  const post = allNews.find(n => Number(n.id) === Number(id));
+  if(!post) return;
+  if(!confirm('متأكد تبي تحذف هذا المنشور؟')) return;
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/news_posts?id=eq.${encodeURIComponent(id)}`, {
+      method:'DELETE',
+      headers:{
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`
+      }
+    });
+    if(!res.ok) throw new Error(await res.text());
+    const path = getNewsStoragePath(post.image_url);
+    if(path) await removeNewsImage(path).catch(err => console.warn('تعذر حذف الصورة القديمة:', err));
+    else if(/^https:\/\//.test(post.image_url || '')) await deleteFromR2(post.image_url).catch(err => console.warn('تعذر حذف الصورة من R2:', err));
+    await loadNewsAdmin();
+    await loadNews();
+    setNewsMessage('success','✅ تم حذف المنشور');
+  }catch(err){
+    console.error(err);
+    setNewsMessage('error','حدث خطأ أثناء حذف المنشور');
+  }
+}
+
+
+// ===== الجداول =====
+const MAX_SCHEDULES_PER_STAGE = 10;
+const STAGE_LABELS = {1:'الأولى', 2:'الثانية', 3:'الثالثة', 4:'الرابعة'};
+let allSchedules = [];
+let schedulesLoadedFor = null;
+
+function selectedScheduleStage(){
+  return Number(document.getElementById('schedule-stage-select').value);
+}
+
+function setScheduleMessage(type, text){
+  const msg = document.getElementById('schedule-msg');
+  msg.className = `msg ${type || ''}`;
+  msg.textContent = text || '';
+}
+
+async function loadSchedulesAdmin(){
+  const list = document.getElementById('schedule-admin-list');
+  const count = document.getElementById('schedule-count');
+  const stage = selectedScheduleStage();
+  schedulesLoadedFor = null;
+  allSchedules = [];
+  count.textContent = 'جاري تحميل الجداول...';
+  list.innerHTML = '';
+  try{
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/schedules?select=id,stage,text,image_url,created_at&stage=eq.${stage}&order=created_at.desc`,
+      {headers:{
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`
+      }, cache:'no-store'}
+    );
+    if(!res.ok) throw new Error(await res.text());
+    const rows = await res.json();
+    // تجاهل رد قديم إذا غيّر المستخدم المرحلة أثناء التحميل
+    if(stage !== selectedScheduleStage()) return;
+    allSchedules = rows;
+    schedulesLoadedFor = stage;
+    renderSchedulesAdmin();
+  }catch(err){
+    console.error(err);
+    if(stage !== selectedScheduleStage()) return;
+    const missing = /PGRST205|42P01/.test(String(err && err.message || ''));
+    count.textContent = missing
+      ? 'جدول الجداول غير موجود بقاعدة البيانات. شغّل ملف schedules_setup.sql بـ Supabase أولاً.'
+      : 'تعذر تحميل الجداول';
+  }
+}
+
+function renderSchedulesAdmin(){
+  const list = document.getElementById('schedule-admin-list');
+  const count = document.getElementById('schedule-count');
+  const stage = selectedScheduleStage();
+  count.textContent = `${allSchedules.length} / ${MAX_SCHEDULES_PER_STAGE} جداول للمرحلة ${STAGE_LABELS[stage]}`;
+  if(!allSchedules.length){
+    list.innerHTML = '<p class="subtitle">لا توجد جداول منشورة لهذي المرحلة</p>';
+    return;
+  }
+  list.innerHTML = allSchedules.map(post => `
+    <div class="news-admin-item">
+      <img src="${escapeHtml(post.image_url)}" alt="صورة الجدول" loading="lazy">
+      ${post.text ? `<div class="news-admin-text">${escapeHtml(post.text)}</div>` : ''}
+      <div class="news-admin-actions">
+        <button type="button" class="icon-btn danger" onclick="deleteSchedule(${Number(post.id)})" title="حذف الجدول">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function submitSchedule(e){
+  e.preventDefault();
+  const stage = selectedScheduleStage();
+  const textInput = document.getElementById('schedule-text');
+  const imageInput = document.getElementById('schedule-image');
+  const btn = document.getElementById('schedule-submit-btn');
+  const text = textInput.value.trim();
+  const file = imageInput.files[0];
+
+  if(!file){
+    setScheduleMessage('error','الرجاء اختيار صورة الجدول');
+    return false;
+  }
+  if(!file.type.startsWith('image/')){
+    setScheduleMessage('error','الملف المختار ليس صورة');
+    return false;
+  }
+  if(file.size > 8 * 1024 * 1024){
+    setScheduleMessage('error','حجم الصورة أكبر من 8MB');
+    return false;
+  }
+  if(schedulesLoadedFor !== stage){
+    setScheduleMessage('error','لسّا يتم تحميل جداول هذي المرحلة، انتظر لحظة وحاول مرة ثانية');
+    return false;
+  }
+  if(allSchedules.length >= MAX_SCHEDULES_PER_STAGE){
+    setScheduleMessage('error',`وصلت للحد الأقصى: ${MAX_SCHEDULES_PER_STAGE} جداول للمرحلة ${STAGE_LABELS[stage]}. احذف جدولاً قديماً أولاً.`);
+    return false;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'جاري الرفع...';
+  setScheduleMessage('', '');
+
+  try{
+    // الجداول فيها كتابة صغيرة، فنستخدم دقة وجودة أعلى من صور الأخبار
+    const compressed = await compressNewsImage(file, 1800, 0.85);
+    const imageUrl = await blobToDataUrl(compressed);
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/schedules`, {
+      method:'POST',
+      headers:{
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type":"application/json",
+        "Prefer":"return=minimal"
+      },
+      body:JSON.stringify({stage, text, image_url:imageUrl})
+    });
+    if(!res.ok){
+      const err = new Error(await res.text());
+      err.status = res.status;
+      throw err;
+    }
+
+    setScheduleMessage('success',`✅ تم نشر الجدول للمرحلة ${STAGE_LABELS[stage]}`);
+    textInput.value = '';
+    imageInput.value = '';
+    await loadSchedulesAdmin();
+  }catch(err){
+    console.error(err);
+    const detail = String(err && err.message || '');
+    if(err && err.status === 409 || detail.includes('23505')){
+      setScheduleMessage('error','هذا الجدول منشور مسبقاً لنفس المرحلة (نفس الصورة ونفس النص).');
+    }else if(detail.includes('PGRST205') || detail.includes('42P01')){
+      setScheduleMessage('error','جدول الجداول غير موجود بقاعدة البيانات. شغّل ملف schedules_setup.sql بـ Supabase أولاً.');
+    }else if(detail.includes('Failed to fetch')){
+      setScheduleMessage('error','تعذر الاتصال بقاعدة البيانات. تحقق من الإنترنت ثم حاول مرة أخرى.');
+    }else{
+      setScheduleMessage('error','تعذر نشر الجدول. حاول مرة أخرى.');
+    }
+  }finally{
+    btn.disabled = false;
+    btn.textContent = 'نشر الجدول';
+  }
+  return false;
+}
+
+async function deleteSchedule(id){
+  if(!confirm('متأكد تبي تحذف هذا الجدول؟')) return;
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/schedules?id=eq.${encodeURIComponent(id)}`, {
+      method:'DELETE',
+      headers:{
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`
+      }
+    });
+    if(!res.ok) throw new Error(await res.text());
+    await loadSchedulesAdmin();
+    setScheduleMessage('success','✅ تم حذف الجدول');
+  }catch(err){
+    console.error(err);
+    setScheduleMessage('error','حدث خطأ أثناء حذف الجدول');
+  }
+}
+
+// ===== الأسئلة الوزارية =====
+const EXAM_FIRST_YEAR = 2013;
+const EXAM_LAST_YEAR = 2026;
+const MAX_EXAM_IMAGES_PER_YEAR = 20;   // الحد الأدنى المطلوب 4 صور لكل سنة، وهذا سقف مريح (غيّره هنا إذا تبي)
+let allExamPapers = [];
+let examsLoadedFor = null;
+
+function fillExamYears(){
+  const sel = document.getElementById('exam-year-select');
+  if(!sel) return;
+  let html = '';
+  for(let y = EXAM_FIRST_YEAR; y <= EXAM_LAST_YEAR; y++) html += `<option value="${y}">${y}</option>`;
+  sel.innerHTML = html;
+}
+
+function selectedExamYear(){
+  return Number(document.getElementById('exam-year-select').value);
+}
+
+function setExamMessage(type, text){
+  const msg = document.getElementById('exam-msg');
+  msg.className = `msg ${type || ''}`;
+  msg.textContent = text || '';
+}
+
+function showExamFilesNote(){
+  const note = document.getElementById('exam-files-note');
+  const files = document.getElementById('exam-images').files;
+  if(!files.length){
+    note.textContent = 'اختر عدة صور دفعة وحدة (الأسئلة عادة أكثر من صفحة). تظهر بالموقع بنفس ترتيب اختيارك، والنص يظهر فوق أول صورة. الحد الأقصى للصورة الواحدة 8MB وتُضغط تلقائياً.';
+    return;
+  }
+  note.textContent = `تم اختيار ${files.length} صور. الترتيب بالموقع: ` + [...files].map((f, i) => `${i + 1}) ${f.name}`).join(' ، ');
+}
+
+// نفس ضغط الأسئلة لكن يرجّع Blob جاهز للرفع إلى R2
+function compressToBlob(file, maxSide, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+        const ctx = canvas.getContext('2d');
+        if(!ctx) return reject(new Error('تعذر تجهيز الصورة'));
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+          if(blob && blob.type === 'image/webp') return resolve(blob);
+          canvas.toBlob(jpg => {
+            if(jpg) resolve(jpg);
+            else reject(new Error('تعذر ضغط الصورة'));
+          }, 'image/jpeg', quality);
+        }, 'image/webp', quality);
+      };
+      img.onerror = () => reject(new Error('الصورة غير صالحة أو غير مدعومة'));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('تعذر قراءة الصورة من الجهاز'));
+    reader.readAsDataURL(file);
+  });
+}
+
+// ضغط الصورة وتحويلها لـ data URL. نجرب webp، وإذا المتصفح (مثل بعض إصدارات الآيفون) رجّع صيغة ثانية ثقيلة نستخدم jpeg.
+function compressToDataUrl(file, maxSide, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+        const ctx = canvas.getContext('2d');
+        if(!ctx) return reject(new Error('تعذر تجهيز الصورة'));
+        ctx.fillStyle = '#ffffff';                       // ورقة الأسئلة بيضاء؛ يمنع الخلفية السوداء لو الصورة شفافة
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+          if(blob && blob.type === 'image/webp') return blobToDataUrl(blob).then(resolve, reject);
+          canvas.toBlob(jpg => {
+            if(jpg) blobToDataUrl(jpg).then(resolve, reject);
+            else reject(new Error('تعذر ضغط الصورة'));
+          }, 'image/jpeg', quality);
+        }, 'image/webp', quality);
+      };
+      img.onerror = () => reject(new Error('الصورة غير صالحة أو غير مدعومة'));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('تعذر قراءة الصورة من الجهاز'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function loadExamsAdmin(){
+  const list = document.getElementById('exam-admin-list');
+  const count = document.getElementById('exam-count');
+  const year = selectedExamYear();
+  examsLoadedFor = null;
+  allExamPapers = [];
+  count.textContent = 'جاري تحميل الصور...';
+  list.innerHTML = '';
+  try{
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/exam_papers?select=id,exam_year,text,image_url,created_at&exam_year=eq.${year}&order=created_at.asc,id.asc`,
+      {headers:{
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`
+      }, cache:'no-store'}
+    );
+    if(!res.ok) throw new Error(await res.text());
+    const rows = await res.json();
+    // تجاهل رد قديم إذا غيّر المستخدم السنة أثناء التحميل
+    if(year !== selectedExamYear()) return;
+    allExamPapers = rows;
+    examsLoadedFor = year;
+    renderExamsAdmin();
+  }catch(err){
+    console.error(err);
+    if(year !== selectedExamYear()) return;
+    const missing = /PGRST205|42P01/.test(String(err && err.message || ''));
+    count.textContent = missing
+      ? 'جدول الأسئلة الوزارية غير موجود بقاعدة البيانات. شغّل ملف sixth_platform_setup.sql بـ Supabase أولاً.'
+      : 'تعذر تحميل الصور';
+  }
+}
+
+function renderExamsAdmin(){
+  const list = document.getElementById('exam-admin-list');
+  const count = document.getElementById('exam-count');
+  const year = selectedExamYear();
+  count.textContent = `${allExamPapers.length} / ${MAX_EXAM_IMAGES_PER_YEAR} صورة لسنة ${year}`;
+  if(!allExamPapers.length){
+    list.innerHTML = '<p class="subtitle">لا توجد صور منشورة لهذي السنة</p>';
+    return;
+  }
+  list.innerHTML = `
+    <div class="news-admin-actions" style="margin-bottom:10px;">
+      <button type="button" class="btn-secondary" style="width:auto;padding:10px 16px;font-size:13px;color:var(--danger);" onclick="deleteExamYear()">🗑️ حذف كل صور سنة ${year}</button>
+    </div>` + allExamPapers.map((post, i) => `
+    <div class="news-admin-item">
+      <div class="news-count" style="margin:0;">صفحة ${i + 1}</div>
+      ${post.text ? `<div class="news-admin-text">${escapeHtml(post.text)}</div>` : ''}
+      <img src="${escapeHtml(post.image_url)}" alt="صفحة ${i + 1}" loading="lazy">
+      <div class="news-admin-actions">
+        <button type="button" class="icon-btn danger" onclick="deleteExamPaper(${Number(post.id)})" title="حذف الصورة">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// الرفع صورة صورة (طلب لكل صورة حتى ما يكبر الطلب الواحد). إذا فشلت صورة نحذف اللي انرفع بهذي الدفعة (كله أو ولا شي).
+async function rollbackExamRows(ids){
+  if(!ids.length) return true;
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?id=in.(${ids.map(Number).join(',')})`, {
+      method:'DELETE',
+      headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+    });
+    return res.ok;
+  }catch(err){
+    return false;
+  }
+}
+
+async function submitExam(e){
+  e.preventDefault();
+  const year = selectedExamYear();
+  const textInput = document.getElementById('exam-text');
+  const imageInput = document.getElementById('exam-images');
+  const btn = document.getElementById('exam-submit-btn');
+  const text = textInput.value.trim();
+  const files = [...imageInput.files];
+
+  if(!files.length){
+    setExamMessage('error','الرجاء اختيار صورة واحدة على الأقل');
+    return false;
+  }
+  if(files.some(f => !f.type.startsWith('image/'))){
+    setExamMessage('error','أحد الملفات المختارة ليس صورة');
+    return false;
+  }
+  if(files.some(f => f.size > 8 * 1024 * 1024)){
+    setExamMessage('error','حجم إحدى الصور أكبر من 8MB');
+    return false;
+  }
+  if(examsLoadedFor !== year){
+    setExamMessage('error','لسّا يتم تحميل صور هذي السنة، انتظر لحظة وحاول مرة ثانية');
+    return false;
+  }
+  const remaining = MAX_EXAM_IMAGES_PER_YEAR - allExamPapers.length;
+  if(files.length > remaining){
+    setExamMessage('error', remaining > 0
+      ? `المتبقي لسنة ${year} هو ${remaining} صورة فقط، وانت اخترت ${files.length}. قلّل العدد أو احذف صوراً قديمة.`
+      : `وصلت للحد الأقصى: ${MAX_EXAM_IMAGES_PER_YEAR} صورة لسنة ${year}. احذف صوراً قديمة أولاً.`);
+    return false;
+  }
+
+  btn.disabled = true;
+  setExamMessage('', '');
+  const insertedIds = [];
+  const uploadedUrls = [];
+
+  try{
+    for(let i = 0; i < files.length; i++){
+      btn.textContent = `جاري رفع الصورة ${i + 1} من ${files.length}...`;
+      // أسئلة مكتوبة بخط صغير: دقة وجودة عالية، وتُرفع إلى R2 ويُحفظ الرابط فقط
+      const blob = await compressToBlob(files[i], 1800, 0.85);
+      const imageUrl = await uploadToR2(blob, 'exams');
+      uploadedUrls.push(imageUrl);
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?select=id`, {
+        method:'POST',
+        headers:{
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Content-Type":"application/json",
+          "Prefer":"return=representation"
+        },
+        // النص يُحفظ مع أول صورة فقط
+        body:JSON.stringify({exam_year:year, text: i === 0 ? text : '', image_url:imageUrl})
+      });
+      if(!res.ok){
+        const err = new Error(await res.text());
+        err.status = res.status;
+        throw err;
+      }
+      const created = await res.json();
+      if(Array.isArray(created) && created[0] && created[0].id != null) insertedIds.push(created[0].id);
+    }
+
+    setExamMessage('success',`✅ تم نشر ${files.length} صورة لسنة ${year}`);
+    textInput.value = '';
+    imageInput.value = '';
+    showExamFilesNote();
+  }catch(err){
+    console.error(err);
+    const rolledBack = await rollbackExamRows(insertedIds);
+    // نحذف من R2 كل صور هذي الدفعة حتى ما تبقى يتيمة
+    await Promise.all(uploadedUrls.map(u => deleteFromR2(u).catch(() => {})));
+    const detail = String(err && err.message || '');
+    let reason;
+    if(detail.includes('R2_UPLOAD_FAILED')){
+      reason = 'تعذر رفع الصورة إلى الخادم.';
+    }else if(err && err.status === 409 || detail.includes('23505')){
+      reason = 'إحدى الصور منشورة مسبقاً لنفس السنة.';
+    }else if(detail.includes('PGRST205') || detail.includes('42P01')){
+      reason = 'جدول الأسئلة الوزارية غير موجود بقاعدة البيانات. شغّل ملف sixth_platform_setup.sql بـ Supabase أولاً.';
+    }else if(err && err.status === 413){
+      reason = 'حجم الصور كبير على الخادم. ارفع عدداً أقل من الصور بالمرة الوحدة.';
+    }else if(detail.includes('Failed to fetch')){
+      reason = 'تعذر الاتصال بقاعدة البيانات. تحقق من الإنترنت.';
+    }else{
+      reason = 'تعذر نشر الصور.';
+    }
+    setExamMessage('error', reason + (insertedIds.length
+      ? (rolledBack ? ' لم يُنشر شي، حاول مرة ثانية.' : ' ⚠️ انرفع جزء من الصور، راجع القائمة تحت واحذف الناقص أو المكرر.')
+      : ' حاول مرة ثانية.'));
+  }finally{
+    btn.disabled = false;
+    btn.textContent = 'نشر الصور';
+    await loadExamsAdmin();
+  }
+  return false;
+}
+
+async function deleteExamPaper(id){
+  if(!confirm('متأكد تبي تحذف هذي الصورة؟')) return;
+  const paper = allExamPapers.find(p => Number(p.id) === Number(id));
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?id=eq.${encodeURIComponent(id)}`, {
+      method:'DELETE',
+      headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+    });
+    if(!res.ok) throw new Error(await res.text());
+    if(paper && /^https:\/\//.test(paper.image_url || '')) await deleteFromR2(paper.image_url).catch(() => {});
+    await loadExamsAdmin();
+    setExamMessage('success','✅ تم حذف الصورة');
+  }catch(err){
+    console.error(err);
+    setExamMessage('error','حدث خطأ أثناء حذف الصورة');
+  }
+}
+
+async function deleteExamYear(){
+  const year = selectedExamYear();
+  if(!confirm(`متأكد تبي تحذف كل صور سنة ${year}؟ ما ينرجع.`)) return;
+  const urls = allExamPapers.map(p => p.image_url).filter(u => /^https:\/\//.test(u || ''));
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?exam_year=eq.${year}`, {
+      method:'DELETE',
+      headers:{ "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+    });
+    if(!res.ok) throw new Error(await res.text());
+    await Promise.all(urls.map(u => deleteFromR2(u).catch(() => {})));
+    await loadExamsAdmin();
+    setExamMessage('success',`✅ تم حذف كل صور سنة ${year}`);
+  }catch(err){
+    console.error(err);
+    setExamMessage('error','حدث خطأ أثناء الحذف');
+  }
+}
+
+// نقل الصور القديمة (base64 داخل Supabase) إلى R2 مرة وحدة. ما نحذف شي: ننسخ الصورة لـ R2 ثم نغيّر الرابط بالسجل فقط.
+async function migrateExamsToR2(){
+  if(!confirm('راح تنتقل كل صور الأسئلة الوزارية القديمة إلى R2. لا تغلق الصفحة أثناء النقل. تكمل؟')) return;
+  const btn = document.getElementById('exam-migrate-btn');
+  btn.disabled = true;
+  let done = 0, skipped = 0;
+  const H = { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` };
+  try{
+    const listRes = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?select=id&image_url=like.data:*&order=id.asc`, { headers:H });
+    if(!listRes.ok) throw new Error(await listRes.text());
+    const ids = (await listRes.json()).map(r => r.id);
+    if(!ids.length){
+      setExamMessage('success','ما توجد صور قديمة للنقل، كلها على R2 ✅');
+      return;
+    }
+    for(let i = 0; i < ids.length; i++){
+      btn.textContent = `جاري النقل ${i + 1} من ${ids.length}...`;
+      const rowRes = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?select=image_url&id=eq.${ids[i]}`, { headers:H });
+      if(!rowRes.ok) throw new Error(await rowRes.text());
+      const dataUrl = ((await rowRes.json())[0] || {}).image_url || '';
+      const blob = await (await fetch(dataUrl)).blob();
+      if(!['image/webp','image/jpeg','image/png'].includes(blob.type)){ skipped++; continue; }
+      const newUrl = await uploadToR2(blob, 'exams');
+      const patch = await fetch(`${SUPABASE_URL}/rest/v1/exam_papers?id=eq.${ids[i]}`, {
+        method:'PATCH',
+        headers:{ ...H, "Content-Type":"application/json", "Prefer":"return=minimal" },
+        body:JSON.stringify({ image_url:newUrl })
+      });
+      if(!patch.ok){
+        await deleteFromR2(newUrl).catch(() => {});
+        throw new Error(await patch.text());
+      }
+      done++;
+    }
+    setExamMessage('success', `✅ تم نقل ${done} صورة إلى R2` + (skipped ? ` (تخطينا ${skipped} بصيغة غير مدعومة)` : ''));
+  }catch(err){
+    console.error(err);
+    setExamMessage('error', `توقف النقل بعد ${done} صورة. الصور المنقولة سليمة، وتكدر تعيد الضغط لإكمال الباقي.`);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = '📦 نقل الصور القديمة إلى R2';
+    await loadExamsAdmin();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('stage-select').innerHTML = stageOptionsHtml(1);
+  fillExamYears();
+  const searchInput = document.getElementById('manage-search');
+  if(searchInput){
+    searchInput.addEventListener('input', () => {
+      renderManageList(searchInput.value);
+    });
+  }
+});
+
+async function loadSubjects(){
+  const select = document.getElementById('subject-select');
+  const stage = Number(document.getElementById('stage-select').value);
+  try{
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/subjects?select=name&stage=eq.${stage}&order=sort_order.asc`,
+      {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`
+        }
+      }
+    );
+    const rows = await res.json();
+    const names = rows.map(r => r.name);
+
+    select.innerHTML = '';
+    names.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      select.appendChild(opt);
+    });
+    const newOpt = document.createElement('option');
+    newOpt.value = '__new__';
+    newOpt.textContent = '+ مادة جديدة';
+    select.appendChild(newOpt);
+    toggleNewSubject();
+  } catch(err){
+    select.innerHTML = '<option value="__new__">+ مادة جديدة</option>';
+  }
+}
+
+function toggleNewSubject(){
+  const select = document.getElementById('subject-select');
+  const wrap = document.getElementById('new-subject-wrap');
+  wrap.style.display = select.value === '__new__' ? 'block' : 'none';
+}
+
+async function submitFile(e){
+  e.preventDefault();
+  const select = document.getElementById('subject-select');
+  const newSubjectInput = document.getElementById('new-subject-input');
+  const nameInput = document.getElementById('file-name');
+  const linkInput = document.getElementById('file-link');
+  const stageSelect = document.getElementById('stage-select');
+  const submitBtn = document.getElementById('submit-btn');
+  const msg = document.getElementById('form-msg');
+
+  let subject = select.value;
+  if(subject === '__new__'){
+    subject = newSubjectInput.value.trim();
+  }
+  const name = nameInput.value.trim();
+  const link = linkInput.value.trim();
+  const stage = Number(stageSelect.value);
+
+  if(!subject || !name || !link){
+    msg.className = 'msg error';
+    msg.textContent = 'الرجاء تعبئة كل الحقول';
+    return false;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'جاري الحفظ...';
+  msg.className = 'msg';
+  msg.textContent = '';
+
+  try{
+    // لو المادة جديدة، سجلها بجدول subjects أول (تجاهل الخطأ لو كانت مسجلة أصلاً)
+    if(select.value === '__new__'){
+      await fetch(`${SUPABASE_URL}/rest/v1/subjects`, {
+        method: 'POST',
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          "Prefer": "resolution=ignore-duplicates,return=minimal"
+        },
+        body: JSON.stringify({ name: subject, stage })
+      });
+    }
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/files`, {
+      method: 'POST',
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({ subject, name, link, stage })
+    });
+
+    if(!res.ok){
+      const errText = await res.text();
+      throw new Error(errText);
+    }
+
+    msg.className = 'msg success';
+    msg.textContent = '✅ تمت الإضافة بنجاح';
+    nameInput.value = '';
+    linkInput.value = '';
+    newSubjectInput.value = '';
+    await loadSubjects();
+    await loadManageList();
+    if(subject){
+      select.value = subject;
+      toggleNewSubject();
+    }
+  } catch(err){
+    msg.className = 'msg error';
+    msg.textContent = 'حدث خطأ، حاول مرة أخرى';
+    console.error(err);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'حفظ وإضافة';
+  }
+
+  return false;
+}
+</script>
+
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
