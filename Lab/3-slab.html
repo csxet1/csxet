@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>سباق الضوء في اللوح الزجاجي – المسألة الثالثة</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3efe4;--panel:#fffdf6;--ink:#1d2433;--mute:#5d6577;--line:#cfc8b4;--acc:#1f8a5b;--hot:#d6442f;--box:#e9e3d0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1424;--panel:#161e35;--ink:#e8ecf7;--mute:#97a1bd;--line:#2c3860;--acc:#5ef0a8;--hot:#ff7a5c;--box:#1d2745}}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Tajawal,system-ui,sans-serif;line-height:1.7}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:8px 0 4px;font-weight:800}
+p.sub{margin:0 0 12px;color:var(--mute)}
+canvas{width:100%;display:block;image-rendering:pixelated;border:3px solid var(--line);background:#0b1020;touch-action:none;cursor:grab}
+.hud{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.hud div{flex:1 1 140px;background:var(--panel);border:2px solid var(--line);padding:6px 10px}
+.hud b{display:block;font-size:1rem;direction:ltr;text-align:right}
+.hud small{color:var(--mute)}
+.ctl{background:var(--panel);border:2px solid var(--line);padding:10px 12px;margin:8px 0}
+.ctl label{display:flex;justify-content:space-between;gap:10px;font-weight:700}
+.ctl input{width:100%;accent-color:var(--acc)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 0}
+.tabs button{flex:1 1 70px;font:inherit;font-weight:700;padding:8px 6px;border:2px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--acc);color:#06130d;border-color:var(--acc)}
+.tabs button:focus-visible,input:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+.card{background:var(--panel);border:2px solid var(--line);border-top:0;padding:12px 14px}
+.card h2{font-size:1.1rem;margin:0 0 6px}
+.why{color:var(--mute);margin:4px 0 8px}
+.eq{background:var(--box);padding:8px 10px;margin:6px 0;direction:ltr;text-align:left;overflow-x:auto;font-family:"Cambria Math",Georgia,serif;font-size:1.05rem;white-space:nowrap}
+.res{border-inline-start:6px solid var(--acc);background:var(--box);padding:8px 12px;margin-top:10px;font-weight:700}
+.res span{direction:ltr;unicode-bidi:isolate}
+.note{font-size:.9rem;color:var(--mute)}
+</style>
+<style id="polish">
+:root{--bg:#f4f1ea;--panel:#ffffff;--ink:#14213d;--mute:#5b6478;--line:#ded7c6;--acc:#0f8b6d;--hot:#e4572e;--box:#f1ede2;--glow:rgba(15,139,109,.18)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0f1f;--panel:#121a33;--ink:#eaf0ff;--mute:#9aa6c7;--line:#25315a;--acc:#4ff0b0;--hot:#ff8a65;--box:#19244a;--glow:rgba(79,240,176,.16)}}
+body{background:radial-gradient(900px 420px at 85% -10%,var(--glow),transparent 70%),var(--bg);letter-spacing:.1px}
+main,#home{padding:18px 16px 28px}
+h1{font-size:1.65rem;letter-spacing:-.2px;position:relative;padding-inline-start:14px}
+h1::before{content:"";position:absolute;inset-inline-start:0;top:.28em;bottom:.28em;width:5px;border-radius:3px;background:linear-gradient(var(--acc),var(--hot))}
+p.sub,.sub{font-size:.98rem;margin-bottom:14px}
+canvas{border:2px solid var(--line);border-radius:16px;box-shadow:0 10px 30px rgba(10,15,40,.28),0 0 0 4px var(--glow)}
+.hud{gap:10px;margin:12px 0}
+.hud div{border:1px solid var(--line);border-radius:14px;padding:8px 12px;box-shadow:0 2px 8px rgba(10,15,40,.08);border-top:3px solid var(--acc)}
+.hud small{font-size:.8rem;letter-spacing:.2px}
+.hud b{font-size:1.1rem;font-variant-numeric:tabular-nums;margin-top:2px}
+.ctl{border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 2px 10px rgba(10,15,40,.07)}
+.ctl label{margin-top:6px}
+.ctl label span{background:var(--box);border-radius:8px;padding:0 10px;font-variant-numeric:tabular-nums;color:var(--acc);font-weight:800}
+.ctl input[type=range]{height:28px;margin:2px 0 4px}
+.tabs{gap:8px;margin:16px 0 10px}
+.tabs button{border:1px solid var(--line);border-radius:12px;padding:10px 8px;box-shadow:0 2px 0 var(--line);transition:transform .12s,background .2s}
+.tabs button:active{transform:translateY(2px);box-shadow:none}
+.tabs button[aria-pressed="true"]{box-shadow:0 4px 14px var(--glow);background:linear-gradient(135deg,var(--acc),#13b58c);color:#04120d}
+.card{border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:0 4px 18px rgba(10,15,40,.08)}
+.card h2{font-size:1.2rem;margin-bottom:8px;color:var(--ink)}
+.card p{margin:6px 0}
+.eq{border-radius:10px;border:1px solid var(--line);border-inline-start:4px solid var(--acc);padding:10px 14px}
+.why{border-inline-start:3px solid var(--line);padding-inline-start:10px}
+.res{border-inline-start:0;border:1px solid var(--acc);border-radius:12px;background:linear-gradient(135deg,var(--glow),transparent);padding:10px 14px}
+.note{line-height:1.7}
+.tile{border:1px solid var(--line)!important;border-radius:18px;box-shadow:0 6px 18px rgba(10,15,40,.12)!important;transition:transform .15s,box-shadow .2s;padding:16px 10px}
+.tile:hover{transform:translateY(-3px)}
+.tile:active{transform:scale(.98)!important}
+.tile svg{border-radius:14px;box-shadow:0 0 0 3px var(--glow)}
+.tile .n{font-size:.85rem;background:var(--box);border-radius:999px;padding:0 12px}
+#bar{border-bottom:1px solid var(--line)!important;box-shadow:0 2px 12px rgba(10,15,40,.12)}
+#back{border-radius:10px!important}
+.grid{gap:14px!important}
+</style>
+</head>
+<body>
+<main>
+<h1>سباق الضوء في اللوح الزجاجي</h1>
+<p class="sub">نبضة ضوء تعبر لوحاً بزاوية 30° • اسحب المشهد لتدويره</p>
+
+<canvas id="cv" width="360" height="225" aria-label="مشهد ثلاثي الأبعاد لنبضة ضوء تعبر لوحاً زجاجياً"></canvas>
+
+<div class="hud">
+<div><small>السرعة في اللوح v</small><b id="hV"></b></div>
+<div><small>طول المسار r</small><b id="hR"></b></div>
+<div><small>الزمن المنقضي</small><b id="hT">0</b></div>
+</div>
+
+<div class="ctl">
+<label>معامل الانكسار n<sub>1</sub> <span id="v1"></span></label>
+<input id="s1" type="range" min="1" max="2" step="0.05" value="1.5" aria-label="معامل الانكسار">
+<label>السمك <span id="v2"></span></label>
+<input id="s2" type="range" min="1" max="10" step="0.5" value="5" aria-label="السمك بالسنتيمتر">
+<label>الزاوية θ <span id="v3"></span></label>
+<input id="s3" type="range" min="0" max="45" step="1" value="30" aria-label="الزاوية">
+<label>نسبة الزمن t<sub>2</sub>/t<sub>1</sub> <span id="v4"></span></label>
+<input id="s4" type="range" min="1.5" max="4" step="0.5" value="2" aria-label="نسبة الزمن">
+<p class="note" style="margin:6px 0 0">الرسم مبسّط: سمك اللوح في المشهد ثابت، والمهم أن ترى أن الضوء في المادة المجهولة يتأخر عن الضوء في اللوح الأول.</p>
+</div>
+
+<div class="tabs" role="group" aria-label="خطوات الحل">
+<button data-s="0" aria-pressed="true">1. السرعة</button>
+<button data-s="1" aria-pressed="false">2. المسار</button>
+<button data-s="2" aria-pressed="false">3. الزمن (a)</button>
+<button data-s="3" aria-pressed="false">4. المجهولة (b)</button>
+</div>
+<div class="card" id="card"></div>
+</main>
+
+<script>
+const C=3e8;
+const cv=document.getElementById('cv'),g=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const RS=1.5;
+const rgba=(c,a)=>{if(c[0]=='#'){const n=parseInt(c.slice(1,7),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`}const m=c.match(/\d+/g);return `rgba(${m[0]},${m[1]},${m[2]},${a})`};
+const bg=()=>{const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#04061a');gr.addColorStop(.55,'#0c1535');gr.addColorStop(1,'#17234d');g.fillStyle=gr;g.fillRect(0,0,W,H);
+ for(let i=0;i<90;i++){g.fillStyle=i%9?'rgba(170,195,255,.32)':'rgba(255,255,255,.85)';g.fillRect((i*97.3%W)|0,(i*53.7%(H*.55))|0,1,1)}
+ const v=g.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,W*.68);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(2,3,18,.5)');g.fillStyle=v;g.fillRect(0,0,W,H)};
+const glow=(x,y,z,r,c,a=.5)=>{const p=proj(x,y,z),R=Math.max(2,r*p.s*RS*.6);const gr=g.createRadialGradient(p.x,p.y,0,p.x,p.y,R);gr.addColorStop(0,rgba(c,a));gr.addColorStop(.4,rgba(c,a*.35));gr.addColorStop(1,rgba(c,0));g.globalCompositeOperation='lighter';g.fillStyle=gr;g.fillRect(p.x-R,p.y-R,2*R,2*R);g.globalCompositeOperation='source-over'};
+const quad=(P,c,a)=>{g.fillStyle=rgba(c,a);g.beginPath();P.forEach((q,i)=>{const p=proj(q[0],q[1],q[2]);i?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y)});g.closePath();g.fill()};
+const lab=(t,x,y,z,c,dy=-8)=>{const p=proj(x,y,z);g.font='bold '+Math.round(8*RS)+'px Tajawal,sans-serif';g.textAlign='center';const w=g.measureText(t).width,yy=p.y+dy*RS;g.fillStyle='rgba(4,6,26,.72)';g.fillRect(p.x-w/2-4,yy-10,w+8,14);g.fillStyle=c;g.fillText(t,p.x,yy+1)};
+const shd=(cx,cz,rx,rz,y)=>{g.fillStyle='rgba(8,6,44,.6)';for(let i=-7;i<=7;i++)for(let j=-7;j<=7;j++){if(Math.abs(i+j)%2)continue;const a=i/7,b=j/7;if(a*a+b*b>1)continue;const p=proj(cx+a*rx,y,cz+b*rz);g.fillRect(p.x|0,p.y|0,2,2)}};
+
+let n1=1.5,th=5,ang=30,kk=2,step=0,yaw=-0.7,pit=0.35,u=0;
+const sci=(x,d=3)=>{if(!x)return'0';const e=Math.floor(Math.log10(Math.abs(x)));return (x/10**e).toFixed(d-1)+' × 10<sup>'+e+'</sup>'};
+const sciT=(x,d=3)=>{if(!x)return'0';const e=Math.floor(Math.log10(Math.abs(x)));return (x/10**e).toFixed(d-1)+'e'+e};
+const calc=()=>{const v1=C/n1,r=th/100/Math.cos(ang*Math.PI/180),t1=r/v1,t2=kk*t1,v2=r/t2,n2=C/v2;return{v1,r,t1,t2,v2,n2}};
+const proj=(x,y,z)=>{
+ let X=x*Math.cos(yaw)-z*Math.sin(yaw),Z=x*Math.sin(yaw)+z*Math.cos(yaw);
+ let Y=y*Math.cos(pit)-Z*Math.sin(pit);Z=y*Math.sin(pit)+Z*Math.cos(pit);
+ const s=3.2/(3.2+Z);return{x:W/2+X*s*84,y:H/2+12-Y*s*84,s}};
+const px=(x,y,z,sz,col)=>{const p=proj(x,y,z);const q=Math.max(1,Math.round(sz*p.s*RS));const X=Math.round(p.x-q/2),Y=Math.round(p.y-q/2);g.fillStyle=col;g.fillRect(X,Y,q,q);if(q>=3){g.fillStyle="rgba(255,246,214,.42)";g.fillRect(X,Y,q-1,1);g.fillRect(X,Y,1,q-1);g.fillStyle="rgba(22,10,70,.38)";g.fillRect(X+1,Y+q-1,q-1,1);g.fillRect(X+q-1,Y+1,1,q-1)}};
+const line=(a,b,col,n=24)=>{for(let i=0;i<=n;i++){const k=i/n;px(a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k,a[2]+(b[2]-a[2])*k,1,col)}};
+function slab(cx,col,lab){
+ const x0=cx-.35,x1=cx+.35,y0=.3,y1=-.3,z0=-.55,z1=.55;
+ const P=[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]];
+ [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]].forEach(e=>line(P[e[0]],P[e[1]],col,18));
+ for(let i=0;i<7;i++)for(let j=0;j<9;j++)if((i+j)%2==0)px(x0+i*.117,y0,z0+j*.137,1,col+'88');
+}
+const NEXT='#ffd84d';
+function frame(){
+ const k=calc();
+ u=(u+0.004)%1.4; // 0..1.4 of longest time
+ bg();
+ for(let i=-5;i<=5;i++){line([i*.2,-.45,-1],[i*.2,-.45,1],'#1c2a52',10);line([-1,-.45,i*.2],[1,-.45,i*.2],'#1c2a52',10)}
+ const two=step==3;
+ const cxA=two?-.5:0,cxB=.5;
+ slab(cxA,'#6fd0e8');if(two)slab(cxB,'#e8a06f');
+ const off=.6*Math.tan(ang*Math.PI/180);const zo=Math.min(.55,off/2);
+ const path=(cx,col,prog)=>{
+  const a=[cx,.3,-zo],b=[cx,-.3,zo];
+  line([cx,.55,-zo*1.9],a,'#ffffff55',8);line(b,[cx,-.55,zo*1.9],'#ffffff55',8);
+  line(a,b,col+'66',22);
+  line([cx,.3,0],[cx,-.3,0],'#ffffff33',8); // normal
+  const p=Math.min(1,prog);
+  const x=cx,y=.3-.6*p,z=-zo+2*zo*p;
+  if(prog<=1.15){for(let i=0;i<4;i++){const q=Math.max(0,p-i*.03);px(x,.3-.6*q,-zo+2*zo*q,6-i,i?col:'#fff')}}
+ };
+ const tA=1,tB=kk; // relative to t1
+ const e=u*(two?kk:1)*1.0; // elapsed in units of t1
+ path(cxA,two?'#6fd0e8':NEXT,e/tA);
+ if(two)path(cxB,'#ffa05e',e/tB);
+ // HUD
+ const tmax=two?k.t2:k.t1,el=Math.min(e,two?kk:1)*k.t1;
+ document.getElementById('hV').innerHTML=step==3?sci(k.v1,2)+' | '+sci(k.v2,2)+' m/s':sci(k.v1,3)+' m/s';
+ document.getElementById('hR').textContent=(k.r*100).toFixed(2)+' cm';
+ document.getElementById('hT').innerHTML=step>=2?sci(el,3)+' s':'—';
+
+ const faces=(cx,c)=>{quad([[cx-.35,.3,-.55],[cx+.35,.3,-.55],[cx+.35,.3,.55],[cx-.35,.3,.55]],c,.2);quad([[cx-.35,-.3,.55],[cx+.35,-.3,.55],[cx+.35,.3,.55],[cx-.35,.3,.55]],c,.12);quad([[cx+.35,-.3,-.55],[cx+.35,-.3,.55],[cx+.35,.3,.55],[cx+.35,.3,-.55]],c,.16)};
+ shd(cxA,0,.4,.6,-.45);faces(cxA,'#6fd0e8');
+ if(two){shd(cxB,0,.4,.6,-.45);faces(cxB,'#e8a06f')}
+ const gp=(cx,pr)=>{const p=Math.min(1,pr);return[cx,.3-.6*p,-zo+2*zo*p]};
+ let a=gp(cxA,e);glow(a[0],a[1],a[2],18,'#ffd84d',.7);
+ if(two){a=gp(cxB,e/kk);glow(a[0],a[1],a[2],18,'#ffa05e',.7)}
+ glow(cxA,.3,-zo,12,'#fff',.35);
+ lab('n₁ = '+n1.toFixed(2),cxA,.55,0,'#9fe8ff');
+ if(two)lab('n₂ = ?',cxB,.55,0,'#ffb27a');
+ lab('θ = '+ang+'°',cxA+.2,.42,-zo,'#fff');
+ lab('r',cxA+.06,0,0,'#ffd84d',-6);
+ lab(th+' cm',cxA+.4,0,-.55,'#cfe3ff',4);
+ requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+
+let dr=null;
+cv.addEventListener('pointerdown',e=>{dr=[e.clientX,e.clientY];cv.setPointerCapture(e.pointerId)});
+cv.addEventListener('pointermove',e=>{if(!dr)return;yaw+=(e.clientX-dr[0])*.01;pit=Math.max(-.2,Math.min(1,pit+(e.clientY-dr[1])*.008));dr=[e.clientX,e.clientY]});
+cv.addEventListener('pointerup',()=>dr=null);
+
+function render(){
+ const k=calc(),ct=document.getElementById('card');
+ document.getElementById('v1').textContent=n1.toFixed(2);
+ document.getElementById('v2').textContent=th+' cm';
+ document.getElementById('v3').textContent=ang+'°';
+ document.getElementById('v4').textContent=kk;
+ const S=[
+ `<h2>الخطوة 1: سرعة الضوء داخل اللوح</h2>
+  <p>الضوء يبطئ داخل الزجاج، ومعامل الانكسار يقول لنا كم مرة أبطأ من سرعته في الفراغ.</p>
+  <div class="eq">v = c / n</div>
+  <p class="why">السبب: لإيجاد سرعة الضوء داخل الزجاج لأنها أقل من سرعة الضوء في الفراغ بمقدار معامل الانكسار n.</p>
+  <div class="eq">v<sub>1</sub> = (3×10<sup>8</sup>) / ${n1.toFixed(2)} = ${sci(k.v1,3)} m/s</div>
+  <div class="res">v<sub>1</sub> = <span>${sci(k.v1,3)} m/s</span></div>`,
+ `<h2>الخطوة 2: طول المسار المائل r</h2>
+  <p>الشعاع المائل يقطع داخل اللوح مساراً أطول من السمك. انظر للخط الأصفر: هو أطول من الخط العمودي الباهت.</p>
+  <div class="eq">r = thickness / cos θ</div>
+  <p class="why">السبب: لتحديد طول المسار الذي يقطعه الضوء داخل اللوح. الكتاب يعامل الزاوية θ على أنها زاوية المسار داخل اللوح مع العمودي.</p>
+  <div class="eq">r = ${(th/100).toFixed(2)} m / cos ${ang}° = ${(th/100).toFixed(2)} / ${Math.cos(ang*Math.PI/180).toFixed(3)} ≈ ${k.r.toFixed(4)} m</div>
+  <div class="res">r ≈ <span>${k.r.toFixed(4)} m</span></div>
+  <p class="note">الكتاب قرّب إلى 0.057 m عند السمك 5 cm.</p>`,
+ `<h2>الفرع (a): زمن عبور اللوح الأول</h2>
+  <p>الضوء يسير بسرعة ثابتة داخل الوسط المتجانس، فالزمن = المسافة ÷ السرعة. راقب الساعة في الأعلى حتى تصل النبضة للأسفل.</p>
+  <div class="eq">t = r / v</div>
+  <p class="why">السبب: لأن الضوء يسير بسرعة ثابتة داخل الوسط المتجانس، فالزمن يساوي المسافة مقسومة على السرعة.</p>
+  <div class="eq">t<sub>1</sub> = ${k.r.toFixed(4)} / ${sci(k.v1,2)} = ${sci(k.t1,3)} s</div>
+  <div class="res">t<sub>1</sub> ≈ <span>${sci(k.t1,3)} s</span></div>
+  <p class="note">عند القيم الأصلية الكتاب يعطي 0.0285×10<sup>−8</sup> s أي 2.85×10<sup>−10</sup> s، لأنه استخدم r = 0.057 m.</p>`,
+ `<h2>الفرع (b): معامل انكسار المادة المجهولة</h2>
+  <p>اللوحان متماثلان بالسمك والمسار، لكن الأيمن (المجهول) أبطأ. الزمن عنده ضعف الزمن الأول، فسرعته نصف السرعة.</p>
+  <div class="eq">t<sub>2</sub> = ${kk} t<sub>1</sub> = ${sci(k.t2,3)} s</div>
+  <div class="eq">v<sub>2</sub> = r / t<sub>2</sub> = ${k.r.toFixed(4)} / ${sci(k.t2,3)} = ${sci(k.v2,3)} m/s</div>
+  <div class="eq">n<sub>2</sub> = c / v<sub>2</sub> = (3×10<sup>8</sup>) / ${sci(k.v2,3)} = ${k.n2.toFixed(2)}</div>
+  <p class="why">السبب: عند ثبوت المسار، إذا تضاعف الزمن قلّت السرعة إلى النصف، ومعامل الانكسار يتناسب طردياً مع الزمن، لذا n<sub>2</sub> = ${kk} × n<sub>1</sub>.</p>
+  <div class="res">n<sub>2</sub> = <span>${k.n2.toFixed(2)}</span> (الأصل: 3)</div>`];
+ ct.innerHTML=S[step]}
+const bind=(id,fn)=>document.getElementById(id).oninput=e=>{fn(+e.target.value);u=0;render()};
+bind('s1',v=>n1=v);bind('s2',v=>th=v);bind('s3',v=>ang=v);bind('s4',v=>kk=v);
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+ step=+b.dataset.s;u=0;
+ document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-pressed',x==b));render()});
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>مختبر الفوتونات – المسألة الأولى</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3efe4;--panel:#fffdf6;--ink:#1d2433;--mute:#5d6577;--line:#cfc8b4;--acc:#1f8a5b;--hot:#d6442f;--box:#e9e3d0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1424;--panel:#161e35;--ink:#e8ecf7;--mute:#97a1bd;--line:#2c3860;--acc:#5ef0a8;--hot:#ff7a5c;--box:#1d2745}}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Tajawal,system-ui,sans-serif;line-height:1.7}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:8px 0 4px;font-weight:800}
+p.sub{margin:0 0 12px;color:var(--mute)}
+canvas{width:100%;display:block;image-rendering:pixelated;border:3px solid var(--line);background:#0b1020;touch-action:none;cursor:grab}
+.hud{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.hud div{flex:1 1 140px;background:var(--panel);border:2px solid var(--line);padding:6px 10px}
+.hud b{display:block;font-size:1.05rem;direction:ltr;text-align:right}
+.hud small{color:var(--mute)}
+.ctl{background:var(--panel);border:2px solid var(--line);padding:10px 12px;margin:8px 0}
+.ctl label{display:flex;justify-content:space-between;gap:10px;align-items:center;font-weight:700}
+.ctl input{width:100%;accent-color:var(--acc)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 0}
+.tabs button{flex:1 1 70px;font:inherit;font-weight:700;padding:8px 6px;border:2px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--acc);color:#06130d;border-color:var(--acc)}
+.tabs button:focus-visible,input:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+.card{background:var(--panel);border:2px solid var(--line);border-top:0;padding:12px 14px}
+.card h2{font-size:1.1rem;margin:0 0 6px}
+.why{color:var(--mute);margin:4px 0 8px}
+.eq{background:var(--box);padding:8px 10px;margin:6px 0;direction:ltr;text-align:left;overflow-x:auto;font-family:"Cambria Math",Georgia,serif;font-size:1.05rem;white-space:nowrap}
+.res{border-inline-start:6px solid var(--acc);background:var(--box);padding:8px 12px;margin-top:10px;font-weight:700}
+.res span{direction:ltr;unicode-bidi:isolate}
+.note{font-size:.9rem;color:var(--mute)}
+</style>
+<style id="polish">
+:root{--bg:#f4f1ea;--panel:#ffffff;--ink:#14213d;--mute:#5b6478;--line:#ded7c6;--acc:#0f8b6d;--hot:#e4572e;--box:#f1ede2;--glow:rgba(15,139,109,.18)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0f1f;--panel:#121a33;--ink:#eaf0ff;--mute:#9aa6c7;--line:#25315a;--acc:#4ff0b0;--hot:#ff8a65;--box:#19244a;--glow:rgba(79,240,176,.16)}}
+body{background:radial-gradient(900px 420px at 85% -10%,var(--glow),transparent 70%),var(--bg);letter-spacing:.1px}
+main,#home{padding:18px 16px 28px}
+h1{font-size:1.65rem;letter-spacing:-.2px;position:relative;padding-inline-start:14px}
+h1::before{content:"";position:absolute;inset-inline-start:0;top:.28em;bottom:.28em;width:5px;border-radius:3px;background:linear-gradient(var(--acc),var(--hot))}
+p.sub,.sub{font-size:.98rem;margin-bottom:14px}
+canvas{border:2px solid var(--line);border-radius:16px;box-shadow:0 10px 30px rgba(10,15,40,.28),0 0 0 4px var(--glow)}
+.hud{gap:10px;margin:12px 0}
+.hud div{border:1px solid var(--line);border-radius:14px;padding:8px 12px;box-shadow:0 2px 8px rgba(10,15,40,.08);border-top:3px solid var(--acc)}
+.hud small{font-size:.8rem;letter-spacing:.2px}
+.hud b{font-size:1.1rem;font-variant-numeric:tabular-nums;margin-top:2px}
+.ctl{border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 2px 10px rgba(10,15,40,.07)}
+.ctl label{margin-top:6px}
+.ctl label span{background:var(--box);border-radius:8px;padding:0 10px;font-variant-numeric:tabular-nums;color:var(--acc);font-weight:800}
+.ctl input[type=range]{height:28px;margin:2px 0 4px}
+.tabs{gap:8px;margin:16px 0 10px}
+.tabs button{border:1px solid var(--line);border-radius:12px;padding:10px 8px;box-shadow:0 2px 0 var(--line);transition:transform .12s,background .2s}
+.tabs button:active{transform:translateY(2px);box-shadow:none}
+.tabs button[aria-pressed="true"]{box-shadow:0 4px 14px var(--glow);background:linear-gradient(135deg,var(--acc),#13b58c);color:#04120d}
+.card{border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:0 4px 18px rgba(10,15,40,.08)}
+.card h2{font-size:1.2rem;margin-bottom:8px;color:var(--ink)}
+.card p{margin:6px 0}
+.eq{border-radius:10px;border:1px solid var(--line);border-inline-start:4px solid var(--acc);padding:10px 14px}
+.why{border-inline-start:3px solid var(--line);padding-inline-start:10px}
+.res{border-inline-start:0;border:1px solid var(--acc);border-radius:12px;background:linear-gradient(135deg,var(--glow),transparent);padding:10px 14px}
+.note{line-height:1.7}
+.tile{border:1px solid var(--line)!important;border-radius:18px;box-shadow:0 6px 18px rgba(10,15,40,.12)!important;transition:transform .15s,box-shadow .2s;padding:16px 10px}
+.tile:hover{transform:translateY(-3px)}
+.tile:active{transform:scale(.98)!important}
+.tile svg{border-radius:14px;box-shadow:0 0 0 3px var(--glow)}
+.tile .n{font-size:.85rem;background:var(--box);border-radius:999px;padding:0 12px}
+#bar{border-bottom:1px solid var(--line)!important;box-shadow:0 2px 12px rgba(10,15,40,.12)}
+#back{border-radius:10px!important}
+.grid{gap:14px!important}
+</style>
+</head>
+<body>
+<main>
+<h1>مختبر الفوتونات</h1>
+<p class="sub">مصدر ضوئي أحادي اللون • اسحب المشهد بإصبعك لتدويره ثلاثي الأبعاد</p>
+
+<canvas id="cv" width="360" height="225" aria-label="مشهد ثلاثي الأبعاد لفوتونات تنبعث من مصدر نحو جدار"></canvas>
+
+<div class="hud">
+<div><small>الزمن t</small><b id="hT">0.00 s</b></div>
+<div><small>الفوتونات المنبعثة</small><b id="hN">0</b></div>
+<div><small>الطاقة المصروفة</small><b id="hE">0 J</b></div>
+</div>
+
+<div class="ctl">
+<label>التردد f <span id="fv"></span></label>
+<input id="fs" type="range" min="4" max="8" step="0.1" value="6" aria-label="التردد">
+<label>القدرة P <span id="pv"></span></label>
+<input id="ps" type="range" min="1" max="20" step="1" value="10" aria-label="القدرة">
+<p class="note" style="margin:6px 0 0">كل مربع مضيء في المشهد = 10<sup>18</sup> فوتون (تجسيد مبسّط، فالفوتون الحقيقي أصغر بكثير). الثانية الواحدة تُعرض بحركة بطيئة.</p>
+</div>
+
+<div class="tabs" role="group" aria-label="خطوات الحل">
+<button data-s="0" aria-pressed="true">1. الفوتون</button>
+<button data-s="1" aria-pressed="false">2. العدد (a)</button>
+<button data-s="2" aria-pressed="false">3. الزخم (b)</button>
+<button data-s="3" aria-pressed="false">4. الزخم الكلي</button>
+</div>
+<div class="card" id="card"></div>
+</main>
+
+<script>
+const h=6.625e-34,c=3e8;
+const cv=document.getElementById('cv'),g=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const RS=1.5;
+const rgba=(c,a)=>{if(c[0]=='#'){const n=parseInt(c.slice(1,7),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`}const m=c.match(/\d+/g);return `rgba(${m[0]},${m[1]},${m[2]},${a})`};
+const bg=()=>{const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#04061a');gr.addColorStop(.55,'#0c1535');gr.addColorStop(1,'#17234d');g.fillStyle=gr;g.fillRect(0,0,W,H);
+ for(let i=0;i<90;i++){g.fillStyle=i%9?'rgba(170,195,255,.32)':'rgba(255,255,255,.85)';g.fillRect((i*97.3%W)|0,(i*53.7%(H*.55))|0,1,1)}
+ const v=g.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,W*.68);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(2,3,18,.5)');g.fillStyle=v;g.fillRect(0,0,W,H)};
+const glow=(x,y,z,r,c,a=.5)=>{const p=proj(x,y,z),R=Math.max(2,r*p.s*RS*.6);const gr=g.createRadialGradient(p.x,p.y,0,p.x,p.y,R);gr.addColorStop(0,rgba(c,a));gr.addColorStop(.4,rgba(c,a*.35));gr.addColorStop(1,rgba(c,0));g.globalCompositeOperation='lighter';g.fillStyle=gr;g.fillRect(p.x-R,p.y-R,2*R,2*R);g.globalCompositeOperation='source-over'};
+const quad=(P,c,a)=>{g.fillStyle=rgba(c,a);g.beginPath();P.forEach((q,i)=>{const p=proj(q[0],q[1],q[2]);i?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y)});g.closePath();g.fill()};
+const lab=(t,x,y,z,c,dy=-8)=>{const p=proj(x,y,z);g.font='bold '+Math.round(8*RS)+'px Tajawal,sans-serif';g.textAlign='center';const w=g.measureText(t).width,yy=p.y+dy*RS;g.fillStyle='rgba(4,6,26,.72)';g.fillRect(p.x-w/2-4,yy-10,w+8,14);g.fillStyle=c;g.fillText(t,p.x,yy+1)};
+const shd=(cx,cz,rx,rz,y)=>{g.fillStyle='rgba(8,6,44,.6)';for(let i=-7;i<=7;i++)for(let j=-7;j<=7;j++){if(Math.abs(i+j)%2)continue;const a=i/7,b=j/7;if(a*a+b*b>1)continue;const p=proj(cx+a*rx,y,cz+b*rz);g.fillRect(p.x|0,p.y|0,2,2)}};
+
+let f=6e14,P=10,step=0,yaw=-0.55,pit=0.28,t=0,last=performance.now(),push=0;
+const sci=(x,d=3)=>{if(!x)return'0';const e=Math.floor(Math.log10(Math.abs(x)));return (x/10**e).toFixed(d-1)+' × 10<sup>'+e+'</sup>'};
+const sciT=(x,d=3)=>{const e=Math.floor(Math.log10(Math.abs(x)));return (x/10**e).toFixed(d-1)+' × 10^'+e};
+const calc=()=>{const E=h*f,N=P*1/E,p=E/c;return{E,N,p,pt:N*p,lam:c/f}};
+function rgb(l){// wavelength nm -> color
+ let r=0,gg=0,b=0;
+ if(l<440){r=(440-l)/60;b=1}else if(l<490){gg=(l-440)/50;b=1}else if(l<510){gg=1;b=(510-l)/20}else if(l<580){r=(l-510)/70;gg=1}else if(l<645){r=1;gg=(645-l)/65}else{r=1}
+ return`rgb(${Math.round(255*Math.min(1,r*1.1))},${Math.round(255*Math.min(1,gg))},${Math.round(255*Math.min(1,b))})`}
+const proj=(x,y,z)=>{
+ let X=x*Math.cos(yaw)-z*Math.sin(yaw),Z=x*Math.sin(yaw)+z*Math.cos(yaw);
+ let Y=y*Math.cos(pit)-Z*Math.sin(pit);Z=y*Math.sin(pit)+Z*Math.cos(pit);
+ const s=3.2/(3.2+Z);return{x:W/2+X*s*93,y:H/2+21-Y*s*93,s}};
+const px=(x,y,z,sz,col)=>{const p=proj(x,y,z);const q=Math.max(1,Math.round(sz*p.s*RS));const X=Math.round(p.x-q/2),Y=Math.round(p.y-q/2);g.fillStyle=col;g.fillRect(X,Y,q,q);if(q>=3){g.fillStyle="rgba(255,246,214,.42)";g.fillRect(X,Y,q-1,1);g.fillRect(X,Y,1,q-1);g.fillStyle="rgba(22,10,70,.38)";g.fillRect(X+1,Y+q-1,q-1,1);g.fillRect(X+q-1,Y+1,1,q-1)}};
+const line=(a,b,col,n=24)=>{for(let i=0;i<=n;i++){const k=i/n;px(a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k,a[2]+(b[2]-a[2])*k,1,col)}};
+const parts=[];let acc=0;
+const RATE=()=>calc().N/1e18; // particles per second
+const SLOW=6; // seconds real per 1 s sim
+function frame(now){
+ const dt=Math.min(.05,(now-last)/1000);last=now;
+ const k=calc(),col=rgb(k.lam*1e9);
+ if(step>0){
+  t+=dt/SLOW;
+  if(t>=1){t=0;parts.length=0;acc=0;push=0}
+  acc+=dt/SLOW*RATE();
+  while(acc>=1){acc--;parts.push({x:-.82,y:(Math.random()-.5)*.5,z:(Math.random()-.5)*.5})}
+ }else{t=(t+dt/10)%1}
+ bg();
+ // floor grid
+ for(let i=-5;i<=5;i++){line([i*.2,-.5,-1],[i*.2,-.5,1],'#1c2a52',10);line([-1,-.5,i*.2],[1,-.5,i*.2],'#1c2a52',10)}
+ // source lamp
+ for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)for(let d=0;d<3;d++)px(-.95-d*.03,a*.1,b*.1,5,d==0?col:'#6b7596');
+ px(-.95,0,0,9,col);
+ // wall (pixel block) only in momentum steps
+ if(step>=2){
+  const wx=.95+push*.05;
+  for(let a=-3;a<=3;a++)for(let b=-3;b<=3;b++)px(wx,a*.09,b*.09,7,(a+b)%2?'#7a4b3a':'#9a6350');
+ }
+ if(step==0){
+  // one big photon: wave packet traveling along x
+  const ph=now/260;
+  for(let i=0;i<60;i++){const x=-.8+i*.027,y=Math.sin(i*.55-ph)*.18;
+   px(x,y,0,6,col);px(x,0,Math.sin(i*.55-ph)*.18,2,'#ffffff55')}
+  px(-.8+((now/900)%1)*1.6,.3,0,5,'#fff');
+ }else{
+  for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=dt*1.9/SLOW*1.6;
+   if(p.x>.92){parts.splice(i,1);if(step>=2)push=Math.min(1,push+.03);continue}
+   px(p.x,p.y,p.z,7,col);px(p.x-.05,p.y,p.z,3,col)}
+ }
+ // HUD
+ document.getElementById('hT').textContent=(step?t:0).toFixed(2)+' s';
+ const n=step?k.N*t:0;
+ document.getElementById('hN').innerHTML=step?sci(n,3):'0';
+ document.getElementById('hE').textContent=(step?P*t:0).toFixed(1)+' J';
+
+ shd(-.95,0,.15,.15,-.5);shd(.95,0,.1,.35,-.5);
+ quad([[-1,-.15,-.15],[-1,.15,-.15],[-1,.15,.15],[-1,-.15,.15]],'#8a94b8',.35);
+ glow(-.93,0,0,46,col,.6);
+ lab('SOURCE',-.95,.3,0,'#cfe3ff');
+ lab('f = '+(f/1e14).toFixed(1)+'×10¹⁴ Hz',-.95,-.3,0,col);
+ if(step==0){glow(-.8+((now/900)%1)*1.6,.3,0,18,'#ffffff',.7);lab('E = hf',.1,.42,0,'#ffe9a8')}
+ else{parts.forEach(p=>glow(p.x,p.y,p.z,12,col,.4));lab('1 square = 10¹⁸ photons',0,-.55,0,'#8fb0ff',6)}
+ if(step>=2)lab('p = E/c',.95,.5,0,'#ffb4a0');
+ requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+
+// drag rotate
+let dr=null;
+cv.addEventListener('pointerdown',e=>{dr=[e.clientX,e.clientY];cv.setPointerCapture(e.pointerId)});
+cv.addEventListener('pointermove',e=>{if(!dr)return;yaw+=(e.clientX-dr[0])*.01;pit=Math.max(-.2,Math.min(1,pit+(e.clientY-dr[1])*.008));dr=[e.clientX,e.clientY]});
+cv.addEventListener('pointerup',()=>dr=null);
+
+// explanation cards
+function render(){
+ const k=calc(),fs=f/1e14,ct=document.getElementById('card');
+ document.getElementById('fv').innerHTML=fs.toFixed(1)+' × 10<sup>14</sup> Hz';
+ document.getElementById('pv').textContent=P+' W';
+ const S=[
+ `<h2>الخطوة 1: طاقة الفوتون الواحد</h2>
+  <p>المصدر أحادي اللون، أي كل فوتوناته لها نفس التردد، فلكل فوتون نفس الطاقة. في المشهد تراه موجة واحدة تتقدم نحو الجدار. الطول الموجي هنا ≈ <span dir="ltr">${(k.lam*1e9).toFixed(0)} nm</span> وهو ما يحدد لونه.</p>
+  <div class="eq">E<sub>ph</sub> = h · f</div>
+  <p class="why">السبب: طاقة الفوتون تتناسب طردياً مع التردد، وثابت بلانك h هو معامل التناسب.</p>
+  <div class="eq">E<sub>ph</sub> = (6.625×10<sup>−34</sup>) × (${fs.toFixed(1)}×10<sup>14</sup>) = ${sci(k.E,4)} J</div>
+  <div class="res">طاقة الفوتون = <span>${sci(k.E,4)} J</span></div>
+  <p class="note">في الكتاب قُرّبت النتيجة إلى 3.97×10<sup>−19</sup> J عند f = 6×10<sup>14</sup>.</p>`,
+ `<h2>الفرع (a): عدد الفوتونات في الثانية</h2>
+  <p>القدرة W تعني جول لكل ثانية، فالمصدر يصرف في ثانية واحدة طاقة قدرها <span dir="ltr">${P} J</span>. اضغط 2 وراقب عداد الفوتونات وشريط الطاقة في الأعلى يصلان إلى القيمة الكلية عند t = 1 s.</p>
+  <div class="eq">E<sub>total</sub> = P · t = ${P} W × 1 s = ${P} J</div>
+  <p class="why">السبب: لتحويل القدرة إلى طاقة كلية خلال زمن محدد.</p>
+  <div class="eq">N<sub>ph</sub> = E<sub>total</sub> / E<sub>ph</sub> = ${P} / ${sci(k.E,4)} ≈ ${sci(k.N,4)}</div>
+  <p class="why">السبب: الطاقة الكلية مقسومة على طاقة الفوتون الواحد تعطي عدد الفوتونات.</p>
+  <div class="res">N<sub>ph</sub> ≈ <span>${sci(k.N,4)}</span> فوتون</div>
+  <p class="note">في الكتاب 2.515×10<sup>19</sup> بسبب تقريب E<sub>ph</sub> إلى 3.97×10<sup>−19</sup>.</p>`,
+ `<h2>الفرع (b): زخم الفوتون الواحد</h2>
+  <p>الفوتون بلا كتلة سكون لكنه يحمل زخماً، لذلك يدفع الجدار دفعة صغيرة عند اصطدامه. شاهد الجدار يتحرك قليلاً مع وصول الفوتونات.</p>
+  <div class="eq">p<sub>ph</sub> = E<sub>ph</sub> / c = ${sci(k.E,4)} / (3×10<sup>8</sup>)</div>
+  <p class="why">السبب: الزخم يرتبط بالطاقة وسرعة الضوء c. ويمكن كتابتها أيضاً p = h/λ = hf/c.</p>
+  <div class="res">p<sub>ph</sub> ≈ <span>${sci(k.p,4)}</span> N·s</div>
+  <p class="note">وحدة N·s تساوي kg·m/s، وفي الكتاب كُتبت J·s/m وهي نفس الوحدة (1.32×10<sup>−27</sup>).</p>`,
+ `<h2>الزخم الكلي للفوتونات المنبعثة في الثانية</h2>
+  <p>نضرب زخم الفوتون الواحد في عدد الفوتونات، أي مجموع الدفعات التي تلقاها الجدار خلال ثانية.</p>
+  <div class="eq">p<sub>total</sub> = N<sub>ph</sub> · p<sub>ph</sub> = (${sci(k.N,4)}) × (${sci(k.p,4)})</div>
+  <p class="why">السبب: كل فوتون يساهم بنفس الزخم، فالمجموع هو حاصل الضرب.</p>
+  <div class="res">p<sub>total</sub> ≈ <span>${sci(k.pt,3)}</span> N·s (kg·m/s)</div>
+  <p class="note">فحص سريع: p<sub>total</sub> = P·t / c = ${P} / (3×10<sup>8</sup>) = ${sci(P/c,3)}، وهي نفس القيمة. لاحظ أن الزخم الكلي لا يعتمد على التردد، جرّب تغيير f.</p>`];
+ ct.innerHTML=S[step]}
+document.getElementById('fs').oninput=e=>{f=e.target.value*1e14;t=0;parts.length=0;acc=0;push=0;render()};
+document.getElementById('ps').oninput=e=>{P=+e.target.value;t=0;parts.length=0;acc=0;push=0;render()};
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+ step=+b.dataset.s;t=0;parts.length=0;acc=0;push=0;
+ document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-pressed',x==b));render()});
+render();
+</script>
+</body>
+</html>

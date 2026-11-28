@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>سباق الموجات إلى الشاشة – المسألة الرابعة</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3efe4;--panel:#fffdf6;--ink:#1d2433;--mute:#5d6577;--line:#cfc8b4;--acc:#1f8a5b;--hot:#d6442f;--box:#e9e3d0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1424;--panel:#161e35;--ink:#e8ecf7;--mute:#97a1bd;--line:#2c3860;--acc:#5ef0a8;--hot:#ff7a5c;--box:#1d2745}}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Tajawal,system-ui,sans-serif;line-height:1.7}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:8px 0 4px;font-weight:800}
+p.sub{margin:0 0 12px;color:var(--mute)}
+canvas{width:100%;display:block;image-rendering:pixelated;border:3px solid var(--line);background:#0b1020;touch-action:none;cursor:grab}
+.hud{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.hud div{flex:1 1 140px;background:var(--panel);border:2px solid var(--line);padding:6px 10px}
+.hud b{display:block;font-size:1rem;direction:ltr;text-align:right}
+.hud small{color:var(--mute)}
+.ctl{background:var(--panel);border:2px solid var(--line);padding:10px 12px;margin:8px 0}
+.ctl label{display:flex;justify-content:space-between;gap:10px;font-weight:700}
+.ctl input{width:100%;accent-color:var(--acc)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 0}
+.tabs button{flex:1 1 90px;font:inherit;font-weight:700;padding:8px 6px;border:2px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--acc);color:#06130d;border-color:var(--acc)}
+.tabs button:focus-visible,input:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+.card{background:var(--panel);border:2px solid var(--line);border-top:0;padding:12px 14px}
+.card h2{font-size:1.1rem;margin:0 0 6px}
+.why{color:var(--mute);margin:4px 0 8px}
+.eq{background:var(--box);padding:8px 10px;margin:6px 0;direction:ltr;text-align:left;overflow-x:auto;font-family:"Cambria Math",Georgia,serif;font-size:1.05rem;white-space:nowrap}
+.res{border-inline-start:6px solid var(--acc);background:var(--box);padding:8px 12px;margin-top:10px;font-weight:700}
+.res span{direction:ltr;unicode-bidi:isolate}
+.note{font-size:.9rem;color:var(--mute)}
+</style>
+<style id="polish">
+:root{--bg:#f4f1ea;--panel:#ffffff;--ink:#14213d;--mute:#5b6478;--line:#ded7c6;--acc:#0f8b6d;--hot:#e4572e;--box:#f1ede2;--glow:rgba(15,139,109,.18)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0f1f;--panel:#121a33;--ink:#eaf0ff;--mute:#9aa6c7;--line:#25315a;--acc:#4ff0b0;--hot:#ff8a65;--box:#19244a;--glow:rgba(79,240,176,.16)}}
+body{background:radial-gradient(900px 420px at 85% -10%,var(--glow),transparent 70%),var(--bg);letter-spacing:.1px}
+main,#home{padding:18px 16px 28px}
+h1{font-size:1.65rem;letter-spacing:-.2px;position:relative;padding-inline-start:14px}
+h1::before{content:"";position:absolute;inset-inline-start:0;top:.28em;bottom:.28em;width:5px;border-radius:3px;background:linear-gradient(var(--acc),var(--hot))}
+p.sub,.sub{font-size:.98rem;margin-bottom:14px}
+canvas{border:2px solid var(--line);border-radius:16px;box-shadow:0 10px 30px rgba(10,15,40,.28),0 0 0 4px var(--glow)}
+.hud{gap:10px;margin:12px 0}
+.hud div{border:1px solid var(--line);border-radius:14px;padding:8px 12px;box-shadow:0 2px 8px rgba(10,15,40,.08);border-top:3px solid var(--acc)}
+.hud small{font-size:.8rem;letter-spacing:.2px}
+.hud b{font-size:1.1rem;font-variant-numeric:tabular-nums;margin-top:2px}
+.ctl{border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 2px 10px rgba(10,15,40,.07)}
+.ctl label{margin-top:6px}
+.ctl label span{background:var(--box);border-radius:8px;padding:0 10px;font-variant-numeric:tabular-nums;color:var(--acc);font-weight:800}
+.ctl input[type=range]{height:28px;margin:2px 0 4px}
+.tabs{gap:8px;margin:16px 0 10px}
+.tabs button{border:1px solid var(--line);border-radius:12px;padding:10px 8px;box-shadow:0 2px 0 var(--line);transition:transform .12s,background .2s}
+.tabs button:active{transform:translateY(2px);box-shadow:none}
+.tabs button[aria-pressed="true"]{box-shadow:0 4px 14px var(--glow);background:linear-gradient(135deg,var(--acc),#13b58c);color:#04120d}
+.card{border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:0 4px 18px rgba(10,15,40,.08)}
+.card h2{font-size:1.2rem;margin-bottom:8px;color:var(--ink)}
+.card p{margin:6px 0}
+.eq{border-radius:10px;border:1px solid var(--line);border-inline-start:4px solid var(--acc);padding:10px 14px}
+.why{border-inline-start:3px solid var(--line);padding-inline-start:10px}
+.res{border-inline-start:0;border:1px solid var(--acc);border-radius:12px;background:linear-gradient(135deg,var(--glow),transparent);padding:10px 14px}
+.note{line-height:1.7}
+.tile{border:1px solid var(--line)!important;border-radius:18px;box-shadow:0 6px 18px rgba(10,15,40,.12)!important;transition:transform .15s,box-shadow .2s;padding:16px 10px}
+.tile:hover{transform:translateY(-3px)}
+.tile:active{transform:scale(.98)!important}
+.tile svg{border-radius:14px;box-shadow:0 0 0 3px var(--glow)}
+.tile .n{font-size:.85rem;background:var(--box);border-radius:999px;padding:0 12px}
+#bar{border-bottom:1px solid var(--line)!important;box-shadow:0 2px 12px rgba(10,15,40,.12)}
+#back{border-radius:10px!important}
+.grid{gap:14px!important}
+</style>
+</head>
+<body>
+<main>
+<h1>سباق الموجات إلى الشاشة</h1>
+<p class="sub">مصدر نقطي S ونقطتان A وB على الشاشة • اسحب المشهد لتدويره</p>
+
+<canvas id="cv" width="360" height="225" aria-label="مشهد ثلاثي الأبعاد لمسارين ضوئيين من مصدر إلى نقطتين على شاشة"></canvas>
+
+<div class="hud">
+<div><small>N<sub id="lA">SA</sub></small><b id="hA">0</b></div>
+<div><small>N<sub>SB</sub></small><b id="hB">0</b></div>
+<div><small id="lD">الفرق</small><b id="hD">0</b></div>
+</div>
+
+<div class="ctl">
+<label>المسافة AB <span id="v1"></span></label>
+<input id="s1" type="range" min="0.5" max="3" step="0.5" value="1" aria-label="المسافة بين A وB بالسنتيمتر">
+<label>المسافة SA <span id="v2"></span></label>
+<input id="s2" type="range" min="50" max="200" step="10" value="100" aria-label="المسافة بين المصدر والشاشة بالسنتيمتر">
+<label>معامل انكسار الشريحة n<sub>g</sub> <span id="v3"></span></label>
+<input id="s3" type="range" min="1.2" max="2" step="0.1" value="1.5" aria-label="معامل انكسار الشريحة">
+<p class="note" style="margin:6px 0 0">الرسم مبسّط: المسافة بين A وB والشريحة مكبّرة كثيراً، والأعداد في الأعلى حقيقية (ملايين الموجات) وتُعدّ مع المربع الأبيض.</p>
+</div>
+
+<div class="tabs" role="group" aria-label="خطوات الحل">
+<button data-s="0" aria-pressed="true">1. المسار SB</button>
+<button data-s="1" aria-pressed="false">2. الفرع (a)</button>
+<button data-s="2" aria-pressed="false">3. الفرع (b)</button>
+</div>
+<div class="card" id="card"></div>
+</main>
+
+<script>
+const LAM=500e-9;
+const cv=document.getElementById('cv'),g=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const RS=1.5;
+const rgba=(c,a)=>{if(c[0]=='#'){const n=parseInt(c.slice(1,7),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`}const m=c.match(/\d+/g);return `rgba(${m[0]},${m[1]},${m[2]},${a})`};
+const bg=()=>{const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#04061a');gr.addColorStop(.55,'#0c1535');gr.addColorStop(1,'#17234d');g.fillStyle=gr;g.fillRect(0,0,W,H);
+ for(let i=0;i<90;i++){g.fillStyle=i%9?'rgba(170,195,255,.32)':'rgba(255,255,255,.85)';g.fillRect((i*97.3%W)|0,(i*53.7%(H*.55))|0,1,1)}
+ const v=g.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,W*.68);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(2,3,18,.5)');g.fillStyle=v;g.fillRect(0,0,W,H)};
+const glow=(x,y,z,r,c,a=.5)=>{const p=proj(x,y,z),R=Math.max(2,r*p.s*RS*.6);const gr=g.createRadialGradient(p.x,p.y,0,p.x,p.y,R);gr.addColorStop(0,rgba(c,a));gr.addColorStop(.4,rgba(c,a*.35));gr.addColorStop(1,rgba(c,0));g.globalCompositeOperation='lighter';g.fillStyle=gr;g.fillRect(p.x-R,p.y-R,2*R,2*R);g.globalCompositeOperation='source-over'};
+const quad=(P,c,a)=>{g.fillStyle=rgba(c,a);g.beginPath();P.forEach((q,i)=>{const p=proj(q[0],q[1],q[2]);i?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y)});g.closePath();g.fill()};
+const lab=(t,x,y,z,c,dy=-8)=>{const p=proj(x,y,z);g.font='bold '+Math.round(8*RS)+'px Tajawal,sans-serif';g.textAlign='center';const w=g.measureText(t).width,yy=p.y+dy*RS;g.fillStyle='rgba(4,6,26,.72)';g.fillRect(p.x-w/2-4,yy-10,w+8,14);g.fillStyle=c;g.fillText(t,p.x,yy+1)};
+const shd=(cx,cz,rx,rz,y)=>{g.fillStyle='rgba(8,6,44,.6)';for(let i=-7;i<=7;i++)for(let j=-7;j<=7;j++){if(Math.abs(i+j)%2)continue;const a=i/7,b=j/7;if(a*a+b*b>1)continue;const p=proj(cx+a*rx,y,cz+b*rz);g.fillRect(p.x|0,p.y|0,2,2)}};
+
+let AB=1,SA=100,ng=1.5,step=0,yaw=-0.75,pit=0.55,m=0;
+const fmt=x=>Math.round(x).toLocaleString('en-US');
+const calc=()=>{
+ const sa=SA/100,ab=AB/100,sb=Math.hypot(sa,ab),NSA=sa/LAM,NSB=sb/LAM,dN=NSB-NSA;
+ const dg=(sb-sa)/(ng-1);
+ return{sa,ab,sb,NSA,NSB,dN,dg,NSAnew:(sa-dg)/LAM+dg*ng/LAM}};
+const proj=(x,y,z)=>{
+ let X=x*Math.cos(yaw)-z*Math.sin(yaw),Z=x*Math.sin(yaw)+z*Math.cos(yaw);
+ let Y=y*Math.cos(pit)-Z*Math.sin(pit);Z=y*Math.sin(pit)+Z*Math.cos(pit);
+ const s=3.2/(3.2+Z);return{x:W/2+X*s*84,y:H/2+9-Y*s*84,s}};
+const px=(x,y,z,sz,col)=>{const p=proj(x,y,z);const q=Math.max(1,Math.round(sz*p.s*RS));const X=Math.round(p.x-q/2),Y=Math.round(p.y-q/2);g.fillStyle=col;g.fillRect(X,Y,q,q);if(q>=3){g.fillStyle="rgba(255,246,214,.42)";g.fillRect(X,Y,q-1,1);g.fillRect(X,Y,1,q-1);g.fillStyle="rgba(22,10,70,.38)";g.fillRect(X+1,Y+q-1,q-1,1);g.fillRect(X+q-1,Y+1,1,q-1)}};
+const line=(a,b,col,n=24)=>{for(let i=0;i<=n;i++){const k=i/n;px(a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k,a[2]+(b[2]-a[2])*k,1,col)}};
+const S0=[-.9,0,0],TA=[.9,0,0];
+function frame(now){
+ const k=calc();
+ const bz=Math.min(.7,.08+AB*.16),TB=[.9,0,bz];
+ m=(m+(step?0.0022:0))%1.12;
+ bg();
+ for(let i=-5;i<=5;i++){line([i*.2,-.2,-1],[i*.2,-.2,1],'#1c2a52',10);line([-1,-.2,i*.2],[1,-.2,i*.2],'#1c2a52',10)}
+ // screen
+ for(let j=-6;j<=6;j++)for(let i=-3;i<=3;i++)px(.93,i*.06,j*.1,4,(i+j)%2?'#3a4670':'#4a5886');
+ px(.9,0,0,6,'#ffd84d');px(.9,0,bz,6,'#ff7a5c');
+ // source
+ for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)px(-.92,i*.04,j*.04,3,'#ffffff');
+ // paths
+ line(S0,TA,'#2d6a8a',30);line(S0,TB,'#8a4a2d',30);
+ const t=now/200,lamV=.1;
+ const lenA=1.8,lenB=Math.hypot(1.8,bz);
+ const slab=step==2;
+ const sl0=.44,sl1=.56;
+ const wave=(T,len,colr,withSlab)=>{
+  let ph=0;const N=170;
+  for(let i=0;i<=N;i++){const s=i/N;
+   if(i>0){const inS=withSlab&&s>sl0&&s<sl1;ph+=(len/N)/lamV*(inS?ng:1)}
+   const x=S0[0]+(T[0]-S0[0])*s,z=S0[2]+(T[2]-S0[2])*s;
+   px(x,Math.sin(2*Math.PI*ph-t)*.09,z,2,colr)}};
+ wave(TA,lenA,'#6fd0e8',slab);wave(TB,lenB,'#ffa05e',false);
+ if(slab){ // glass slab on path A
+  const x0=-.9+1.8*sl0,x1=-.9+1.8*sl1,h=.14;
+  const P=[[x0,-h,-h],[x1,-h,-h],[x1,h,-h],[x0,h,-h],[x0,-h,h],[x1,-h,h],[x1,h,h],[x0,h,h]];
+  [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]].forEach(e=>line(P[e[0]],P[e[1]],'#e8d98a',8));
+ }
+ // sweep markers
+ if(step>0&&m<=1){
+  const mm=m;
+  for(let y=-.1;y<=.1;y+=.04){px(S0[0]+1.8*mm,y,0,3,'#fff');px(S0[0]+(TB[0]-S0[0])*mm,y,TB[2]*mm,3,'#fff')}
+ }
+ const f=Math.min(1,m);
+ if(step==0){document.getElementById('hA').textContent='—';document.getElementById('hB').textContent='—';document.getElementById('hD').textContent='—'}
+ else if(step==1){
+  document.getElementById('lA').textContent='SA';document.getElementById('lD').textContent='الفرق ΔN';
+  document.getElementById('hA').textContent=fmt(k.NSA*f);document.getElementById('hB').textContent=fmt(k.NSB*f);document.getElementById('hD').textContent=fmt(k.dN*f)}
+ else{
+  document.getElementById('lA').textContent='SA,new';document.getElementById('lD').textContent='الفرق بعد الشريحة';
+  document.getElementById('hA').textContent=fmt(k.NSAnew*f);document.getElementById('hB').textContent=fmt(k.NSB*f);document.getElementById('hD').textContent=fmt((k.NSB-k.NSAnew)*f)}
+
+ shd(-.92,0,.12,.12,-.2);
+ quad([[.93,-.18,-.6],[.93,-.18,.6],[.93,.18,.6],[.93,.18,-.6]],'#7a8ac8',.1);
+ glow(-.92,0,0,44,'#fff',.7);glow(.9,0,0,22,'#ffd84d',.55);glow(.9,0,bz,22,'#ff7a5c',.55);
+ lab('S',-.92,.2,0,'#fff');lab('A',.9,.16,0,'#ffd84d');lab('B',.9,.16,bz,'#ff9a7a');
+ lab('SA = '+SA+' cm',-.1,.14,0,'#6fd0e8',-2);lab('SB = '+(k.sb*100).toFixed(3)+' cm',-.1,.14,bz*.44,'#ffa05e');
+ lab('AB = '+AB+' cm',.9,-.1,bz*.5,'#fff',10);lab('SCREEN',.93,.34,-.45,'#8fb0ff');
+ if(step>0&&m<=1){glow(-.9+1.8*m,0,0,18,'#fff',.6);glow(-.9+(TB[0]+.9)*m,0,TB[2]*m,18,'#fff',.6)}
+ if(step==2){const x0=-.9+1.8*.44,x1=-.9+1.8*.56,h=.14;quad([[x0,-h,h],[x1,-h,h],[x1,h,h],[x0,h,h]],'#ffe9a8',.25);quad([[x0,h,-h],[x1,h,-h],[x1,h,h],[x0,h,h]],'#fff3c4',.3);lab('n_g = '+ng.toFixed(1),(x0+x1)/2,.25,0,'#ffe9a8')}
+ requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+
+let dr=null;
+cv.addEventListener('pointerdown',e=>{dr=[e.clientX,e.clientY];cv.setPointerCapture(e.pointerId)});
+cv.addEventListener('pointermove',e=>{if(!dr)return;yaw+=(e.clientX-dr[0])*.01;pit=Math.max(-.2,Math.min(1.2,pit+(e.clientY-dr[1])*.008));dr=[e.clientX,e.clientY]});
+cv.addEventListener('pointerup',()=>dr=null);
+
+function render(){
+ const k=calc(),ct=document.getElementById('card');
+ document.getElementById('v1').textContent=AB+' cm';
+ document.getElementById('v2').textContent=SA+' cm';
+ document.getElementById('v3').textContent=ng.toFixed(1);
+ const S=[
+ `<h2>الخطوة 1: طول المسار SB وعدد موجات كل مسار</h2>
+  <p>المسار SA عمودي على الشاشة، أما SB فمائل لأن B تبعد AB عن A. لذلك SB أطول قليلاً.</p>
+  <div class="eq">SB = √( SA² + AB² ) = √(${SA}² + ${AB}²) = ${(k.sb*100).toFixed(3)} cm</div>
+  <p class="why">السبب: المسار SA عمودي على الشاشة والمسافة AB تقع على الشاشة، فيتكوّن مثلث قائم الزاوية وتره هو SB.</p>
+  <div class="eq">N = d / λ</div>
+  <p class="why">السبب: لحساب عدد الأطوال الموجية الواقعة على كل مسار.</p>
+  <div class="eq">N<sub>SB</sub> = ${k.sb.toFixed(5)} / (500×10<sup>−9</sup>) ≈ ${fmt(k.NSB)}</div>
+  <div class="eq">N<sub>SA</sub> = ${k.sa.toFixed(2)} / (500×10<sup>−9</sup>) = ${fmt(k.NSA)}</div>
+  <p class="note">الكتاب يكتبها 20001×10² و20000×10² عند القيم الأصلية.</p>`,
+ `<h2>الفرع (a): الفرق في عدد الموجات</h2>
+  <p>اضغط التبويب وراقب العدّادات: المربع الأبيض يمسح المسارين، ويتجمع في النهاية فرق صغير جداً بين العددين.</p>
+  <div class="eq">ΔN = N<sub>SB</sub> − N<sub>SA</sub></div>
+  <p class="why">السبب: لإيجاد الفرق العددي بين موجات المسار الأطول (SB) وموجات المسار الأقصر (SA).</p>
+  <div class="eq">ΔN = ${fmt(k.NSB)} − ${fmt(k.NSA)} ≈ ${fmt(k.dN)}</div>
+  <div class="res">ΔN ≈ <span>${fmt(k.dN)}</span> موجة</div>
+  <p class="note">عند القيم الأصلية تطلع 100 موجة، وهي فرق ضئيل جداً مقارنة بملايين الموجات.</p>`,
+ `<h2>الفرع (b): سمك الشريحة الزجاجية d<sub>g</sub></h2>
+  <p>الشريحة (الصندوق الأصفر) توضع على المسار SA فتقصر الموجة داخلها وتزيد عدد موجاته حتى يتساوى العدد مع المسار SB.</p>
+  <div class="eq">N<sub>SB</sub> = N<sub>SA,new</sub> = (SA − d<sub>g</sub>)/λ<sub>0</sub> + d<sub>g</sub>·n<sub>g</sub>/λ<sub>0</sub></div>
+  <p class="why">السبب: الشريحة تحل محل جزء مساوٍ لها من الهواء، فينقص من الهواء d<sub>g</sub> وتزيد الموجات داخلها بسبب معامل الانكسار n<sub>g</sub>.</p>
+  <div class="eq">${(k.sb*100).toFixed(3)} = ${SA} − d<sub>g</sub> + ${ng.toFixed(1)} d<sub>g</sub></div>
+  <div class="eq">${(k.sb*100-SA).toFixed(3)} = ${(ng-1).toFixed(1)} d<sub>g</sub> ⟹ d<sub>g</sub> = ${(k.dg*100).toFixed(4)} cm</div>
+  <div class="res">d<sub>g</sub> ≈ <span>${(k.dg*100).toFixed(4)} cm</span> = <span>${(k.dg*1e6).toFixed(0)} μm</span></div>
+  <p class="note">عند القيم الأصلية d<sub>g</sub> = 10<sup>−2</sup> cm (أو 10<sup>−4</sup> m). التفسير: الشريحة زادت عدد الموجات في SA بمقدار 100 موجة ليعادل SB. شاهد العداد: الفرق يصير صفراً.</p>`];
+ ct.innerHTML=S[step]}
+const bind=(id,fn)=>document.getElementById(id).oninput=e=>{fn(+e.target.value);m=0;render()};
+bind('s1',v=>AB=v);bind('s2',v=>SA=v);bind('s3',v=>ng=v);
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+ step=+b.dataset.s;m=0;
+ document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-pressed',x==b));render()});
+render();
+</script>
+</body>
+</html>
